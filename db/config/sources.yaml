@@ -1,0 +1,56 @@
+stores:
+  - name: Kettl
+    currency: USD
+    products:
+      - url: https://kettl.co/products/kiwami-matcha
+        # Kettl's own product description names Yame as this matcha's origin.
+        region: Fukuoka (Yame)
+
+  - name: Ippodo
+    currency: USD
+    products:
+      - url: https://ippodotea.com/products/ummon-no-mukashi-40g
+        # Ippodo is a Kyoto-based producer; region not stated per-product so this is a best-effort default.
+        region: Kyoto (Uji)
+
+  - name: Encha
+    currency: USD
+    products:
+      - url: https://encha.com/products/encha-ceremonial-grade
+        # Encha sources directly from Uji, Kyoto.
+        region: Kyoto (Uji)
+
+  - name: Matchaeologist
+    currency: USD
+    products:
+      - url: https://www.matchaeologist.com/products/meiko-ceremonial-matcha
+        # Region not stated on this SKU.
+        region: null
+
+  - name: "Rocky's Matcha"
+    currency: USD
+    products:
+      - url: https://www.rockysmatcha.com/products/rockys-matcha-ceremonial-blend-matcha-20g
+        region: Fukuoka (Yame)
+
+  - name: Nio Teas
+    currency: USD
+    products:
+      - url: https://nioteas.com/products/matcha-tea-washimine
+        # Stated as Kyoto / Wazuka; mapped to our Kyoto (Uji) harvest-region entry since
+        # Wazuka doesn't have its own row in harvest_seasons.
+        region: Kyoto (Uji)
+
+  - name: Jade Leaf Matcha
+    currency: USD
+    products:
+      - url: https://www.jadeleafmatcha.com/products/organic-barista-edition-ceremonial-matcha
+        # Region not stated on this SKU.
+        region: null
+
+# Checked but not added:
+# - Mizuba Tea Co., Breakaway Matcha, DoMatcha: verified Shopify stores, but their listed
+#   products carry no gram/weight figure in the title (sold by "servings" or an untitled
+#   default variant), so extract/transform can't derive size_grams for them yet.
+# - Sazen Tea, Aiya America, O-Cha.com, Marukyu Koyamaen, Tealyra: not Shopify (custom
+#   platforms/BigCommerce), incompatible with the current .js-endpoint scraper.

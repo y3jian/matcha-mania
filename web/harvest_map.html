@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matcha Harvest Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  .viz-root {
+    --surface-1:      #fdfcf6;
+    --page:           #f5f1e4;
+    --text-primary:   #1c2117;
+    --text-secondary: #545a45;
+    --text-muted:     #8b8d78;
+    --gridline:       #e6e1cd;
+    --baseline:       #cfc9ae;
+    --border:         rgba(28,33,23,0.10);
+    --brand:          #3c6130;
+    --brand-strong:   #2c481f;
+    --brand-soft:     #e8f0e0;
+    --series-japan:   #4c7a3d;
+    --series-china:   #e0672c;
+    --series-korea:   #6b4a8a;
+    --series-muted:   #b7b39e;
+    --series-muted-fill: #ddd8c2;
+    --status-good:    #0ca30c;
+    --status-critical:#d03b3b;
+    --pin-ring:       #fdfcf6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .viz-root {
+      --surface-1:      #1b1f16;
+      --page:           #10130d;
+      --text-primary:   #f2efe2;
+      --text-secondary: #c4c0aa;
+      --text-muted:     #8d8a76;
+      --gridline:       #2b2f22;
+      --baseline:       #3b4030;
+      --border:         rgba(255,255,255,0.10);
+      --brand:          #6fae57;
+      --brand-strong:   #8bc46e;
+      --brand-soft:     rgba(111,174,87,0.14);
+      --series-japan:   #4f9a3a;
+      --series-china:   #c2621f;
+      --series-korea:   #9573c0;
+      --series-muted:   #55584a;
+      --series-muted-fill: #313528;
+      --pin-ring:       #1b1f16;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    --surface-1:      #1b1f16;
+    --page:           #10130d;
+    --text-primary:   #f2efe2;
+    --text-secondary: #c4c0aa;
+    --text-muted:     #8d8a76;
+    --gridline:       #2b2f22;
+    --baseline:       #3b4030;
+    --border:         rgba(255,255,255,0.10);
+    --brand:          #6fae57;
+    --brand-strong:   #8bc46e;
+    --brand-soft:     rgba(111,174,87,0.14);
+    --series-japan:   #4f9a3a;
+    --series-china:   #c2621f;
+    --series-korea:   #9573c0;
+    --series-muted:   #55584a;
+    --series-muted-fill: #313528;
+    --pin-ring:       #1b1f16;
+  }
+  :root[data-theme="light"] .viz-root {
+    --surface-1:      #fdfcf6;
+    --page:           #f5f1e4;
+    --text-primary:   #1c2117;
+    --text-secondary: #545a45;
+    --text-muted:     #8b8d78;
+    --gridline:       #e6e1cd;
+    --baseline:       #cfc9ae;
+    --border:         rgba(28,33,23,0.10);
+    --brand:          #3c6130;
+    --brand-strong:   #2c481f;
+    --brand-soft:     #e8f0e0;
+    --series-japan:   #4c7a3d;
+    --series-china:   #e0672c;
+    --series-korea:   #6b4a8a;
+    --series-muted:   #b7b39e;
+    --series-muted-fill: #ddd8c2;
+    --pin-ring:       #fdfcf6;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--page); }
+
+  .viz-root {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  .hero {
+    margin: 0 -20px 24px;
+    padding: 36px 20px 30px;
+    background: linear-gradient(160deg, var(--brand) 0%, var(--brand-strong) 100%);
+    color: #f6f9f1;
+    border-radius: 0 0 20px 20px;
+  }
+  .hero h1 { font-size: 1.7rem; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+  .hero .subtitle { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+
+  .callout {
+    background: var(--brand-soft);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .callout .figure { font-size: 1.7rem; font-weight: 700; white-space: nowrap; color: var(--brand-strong); }
+  .callout .desc { color: var(--text-secondary); font-size: 0.92rem; }
+
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .card h2 { font-size: 1.08rem; margin: 0 0 2px; display: flex; align-items: center; gap: 8px; }
+  .card .card-sub { color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 14px; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; font-size: 0.82rem; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .swatch.sq { border-radius: 3px; }
+
+  .empty-state { color: var(--text-muted); font-size: 0.88rem; padding: 18px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
+
+  /* price cards */
+  .price-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .price-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--page); }
+  .price-card .store { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; }
+  .price-card .name { font-weight: 600; margin: 2px 0 8px; font-size: 0.95rem; }
+  .price-card .price-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .price-card .price { font-size: 1.3rem; font-weight: 700; }
+  .price-card .per-g { color: var(--text-muted); font-size: 0.72rem; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+  .badge.good { color: var(--status-good); background: color-mix(in srgb, var(--status-good) 15%, transparent); }
+  .badge.critical { color: var(--status-critical); background: color-mix(in srgb, var(--status-critical) 15%, transparent); }
+  .price-card .meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+  .price-card a { color: var(--brand); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+  .price-card a:hover { text-decoration: underline; }
+
+  /* map */
+  .map-wrap { position: relative; }
+  #map { width: 100%; height: 420px; border-radius: 12px; z-index: 0; }
+  .map-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+  .viz-root .leaflet-tile-pane { filter: saturate(0.85) sepia(0.12) hue-rotate(45deg); }
+  :root[data-theme="dark"] .viz-root .leaflet-tile-pane { filter: invert(0.9) hue-rotate(90deg) brightness(0.95) saturate(0.85); }
+  :root[data-theme="light"] .viz-root .leaflet-tile-pane { filter: saturate(0.85) sepia(0.12) hue-rotate(45deg); }
+  @media (prefers-color-scheme: dark) {
+    .viz-root .leaflet-tile-pane { filter: invert(0.9) hue-rotate(90deg) brightness(0.95) saturate(0.85); }
+  }
+  .viz-root .leaflet-popup-content-wrapper { background: var(--surface-1); color: var(--text-primary); border-radius: 10px; }
+  .viz-root .leaflet-popup-tip { background: var(--surface-1); }
+  .viz-root .leaflet-popup-content { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 0.82rem; line-height: 1.4; margin: 10px 12px; }
+  .viz-root .leaflet-popup-content strong { display: block; font-size: 0.88rem; margin-bottom: 3px; }
+  .shop-pin { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--brand); box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  .shop-pin span { transform: rotate(45deg); font-size: 13px; }
+
+  /* timeline */
+  .timeline { overflow-x: auto; }
+  .tl-grid { min-width: 640px; }
+  .tl-months { display: grid; grid-template-columns: 190px repeat(12, 1fr); font-size: 0.72rem; color: var(--text-muted); border-bottom: 1px solid var(--gridline); padding-bottom: 6px; margin-bottom: 4px; }
+  .tl-months div { text-align: center; }
+  .tl-months div:first-child { text-align: left; }
+  .tl-row { display: grid; grid-template-columns: 190px repeat(12, 1fr); align-items: center; min-height: 30px; border-bottom: 1px solid var(--gridline); }
+  .tl-row:last-child { border-bottom: none; }
+  .tl-label { font-size: 0.78rem; color: var(--text-secondary); padding-right: 8px; }
+  .tl-label strong { color: var(--text-primary); font-weight: 600; display: block; font-size: 0.8rem; }
+  .tl-track { position: relative; grid-column: 2 / 14; height: 26px; }
+  .tl-bar { position: absolute; top: 0; height: 20px; border-radius: 4px; cursor: pointer; }
+  .tl-bar:hover, .tl-bar:focus { outline: 2px solid var(--text-primary); outline-offset: 1px; }
+  .tl-buy-window { position: absolute; bottom: 0; height: 3px; border-radius: 2px; background: var(--brand); cursor: pointer; }
+  .tl-buy-window:hover { height: 5px; bottom: -1px; }
+
+  /* tooltip */
+  .tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--text-primary);
+    color: var(--page);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    max-width: 260px;
+    line-height: 1.4;
+    z-index: 1000;
+    display: none;
+  }
+  .tooltip strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+  .tooltip .muted { opacity: 0.75; }
+
+  details.table-toggle summary { cursor: pointer; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px; }
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  table.data-table th, table.data-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--gridline); vertical-align: top; }
+  table.data-table th { color: var(--text-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  table.data-table a { color: inherit; }
+
+  footer.sources { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+  footer.sources a { color: inherit; }
+  footer.sources li { margin-bottom: 3px; }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <div class="hero">
+    <h1>🍵 Matcha Harvest Map</h1>
+    <p class="subtitle">When and where ceremonial-grade matcha is picked — plus what it costs right now.</p>
+  </div>
+
+  <div class="callout" id="callout">
+    <div class="figure">Early Apr &rarr; late May</div>
+    <div class="desc">Ichibancha (first flush) — the only flush most producers shade and grind into ceremonial matcha — moves north across Japan from Kagoshima to Saitama. Everything later in the year is lower-grade or not matcha at all.</div>
+  </div>
+
+  <div class="card">
+    <h2>🛒 Current prices</h2>
+    <p class="card-sub">Latest scrape per tracked product. Refreshed daily by the pipeline.</p>
+    <div id="price-grid" class="price-grid"></div>
+  </div>
+
+  <div class="card">
+    <h2>🗺️ Where it's grown</h2>
+    <p class="card-sub">Round pins are harvest regions; leaf pins are stores we're tracking. Click either for details.</p>
+    <div class="legend" id="map-legend"></div>
+    <div class="map-wrap">
+      <div id="map" role="img" aria-label="Map of matcha and tea growing regions in China, South Korea, and Japan, with markers for tracked stores"></div>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+    <p class="map-note">Pins mark representative city/county centers for each growing region, not surveyed farm boundaries.</p>
+  </div>
+
+  <div class="card">
+    <h2>📅 Harvest calendar</h2>
+    <p class="card-sub">Bars in color are graded into matcha; gray bars are the same plants' later pickings, sold as bancha/hojicha or bulk leaf instead. The underline marks a rule-based "good time to buy" window — see note below.</p>
+    <div class="legend" id="tl-legend"></div>
+    <div class="timeline">
+      <div class="tl-grid" id="tl-grid"></div>
+    </div>
+    <p class="map-note">"Good time to buy" is a rule derived from the sourced harvest calendar (fresh-crop window + autumn kuradashi release where documented) — not a model fit on price history. No public source publishes month-by-month retail matcha prices, and our own price tracker doesn't have enough history yet to fit one.</p>
+  </div>
+
+  <div class="card">
+    <details class="table-toggle">
+      <summary>View full harvest data table</summary>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="data-table"></table>
+      </div>
+    </details>
+  </div>
+
+  <footer class="sources">
+    <strong style="color:var(--text-secondary)">Sources</strong>
+    <ul id="source-list"></ul>
+  </footer>
+</div>
+
+<script src="data/harvest_seasons.js" onerror="window.HARVEST_SEASONS = undefined"></script>
+<script src="data/matcha_prices.js" onerror="window.MATCHA_PRICES = undefined"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  const HARVEST = window.HARVEST_SEASONS || [];
+  const PRICES = window.MATCHA_PRICES || [];
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  const COUNTRY_COLOR = { "Japan": "var(--series-japan)", "China": "var(--series-china)", "South Korea": "var(--series-korea)" };
+  function colorFor(row) { return row.used_for_matcha ? COUNTRY_COLOR[row.country] : "var(--series-muted)"; }
+  function fillFor(row) { return row.used_for_matcha ? COUNTRY_COLOR[row.country] : "var(--series-muted-fill)"; }
+  function cssVar(value) {
+    const match = /^var\((--[a-zA-Z0-9-]+)\)$/.exec(value);
+    if (!match) return value;
+    return getComputedStyle(document.querySelector(".viz-root")).getPropertyValue(match[1]).trim() || value;
+  }
+
+  // ---- tooltip ----
+  const tooltip = document.getElementById("tooltip");
+  function showTooltip(evt, html) {
+    tooltip.innerHTML = "";
+    tooltip.appendChild(html);
+    tooltip.style.display = "block";
+    positionTooltip(evt);
+  }
+  function positionTooltip(evt) {
+    const pad = 14;
+    let x = evt.clientX + pad;
+    let y = evt.clientY + pad;
+    if (x + 270 > window.innerWidth) x = evt.clientX - 270 - pad;
+    if (y + 120 > window.innerHeight) y = evt.clientY - 120 - pad;
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+  }
+  function hideTooltip() { tooltip.style.display = "none"; }
+  function tooltipBody(title, lines) {
+    const wrap = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = title;
+    wrap.appendChild(strong);
+    lines.forEach(l => {
+      const div = document.createElement("div");
+      if (l.muted) div.className = "muted";
+      div.textContent = l.text;
+      wrap.appendChild(div);
+    });
+    return wrap;
+  }
+
+  // ---- legends ----
+  function buildLegend(el, items) {
+    items.forEach(it => {
+      const div = document.createElement("div");
+      div.className = "legend-item";
+      const sw = document.createElement("span");
+      sw.className = "swatch" + (it.square ? " sq" : "");
+      sw.style.background = it.color;
+      const label = document.createElement("span");
+      label.textContent = it.label;
+      div.append(sw, label);
+      el.appendChild(div);
+    });
+  }
+  const legendItems = [
+    { label: "Japan", color: "var(--series-japan)" },
+    { label: "China", color: "var(--series-china)" },
+    { label: "South Korea", color: "var(--series-korea)" },
+    { label: "Not used for matcha", color: "var(--series-muted)" },
+  ];
+  buildLegend(document.getElementById("tl-legend"), [...legendItems, { label: "🛒 Good time to buy", color: "var(--brand)", square: true }]);
+  buildLegend(document.getElementById("map-legend"), [...legendItems, { label: "Tracked store", color: "var(--brand)", square: true }]);
+
+  // ---- current prices ----
+  const priceGrid = document.getElementById("price-grid");
+  if (!PRICES.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No price data yet — run `python3 main.py` to scrape the tracked stores.";
+    priceGrid.appendChild(empty);
+  } else {
+    // most recent row per store+product
+    const latestByKey = new Map();
+    PRICES.forEach(row => {
+      const key = row.store + "|" + row.product_name;
+      const existing = latestByKey.get(key);
+      if (!existing || row.scraped_at > existing.scraped_at) latestByKey.set(key, row);
+    });
+    [...latestByKey.values()].sort((a, b) => a.price - b.price).forEach(row => {
+      const card = document.createElement("div");
+      card.className = "price-card";
+
+      const store = document.createElement("div");
+      store.className = "store";
+      store.textContent = row.store + (row.region ? " · " + row.region : "");
+      card.appendChild(store);
+
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = row.product_name;
+      card.appendChild(name);
+
+      const priceRow = document.createElement("div");
+      priceRow.className = "price-row";
+      const price = document.createElement("span");
+      price.className = "price";
+      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency }).format(row.price);
+      const perG = document.createElement("span");
+      perG.className = "per-g";
+      if (row.size_grams) perG.textContent = (row.price / row.size_grams).toFixed(2) + " " + row.currency + "/g";
+      priceRow.append(price, perG);
+      card.appendChild(priceRow);
+
+      const badge = document.createElement("span");
+      badge.className = "badge " + (row.in_stock ? "good" : "critical");
+      badge.textContent = row.in_stock ? "In stock" : "Sold out";
+      card.appendChild(badge);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const checked = new Date(row.scraped_at);
+      meta.textContent = "Checked " + checked.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      card.appendChild(meta);
+
+      const link = document.createElement("div");
+      link.style.marginTop = "8px";
+      const a = document.createElement("a");
+      a.href = row.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = "View product →";
+      link.appendChild(a);
+      card.appendChild(link);
+
+      priceGrid.appendChild(card);
+    });
+  }
+
+  // ---- map ----
+  if (!HARVEST.length) {
+    document.getElementById("map").outerHTML = '<div class="empty-state">No harvest data yet — run `python3 -m data.pipelines.load_harvest_seasons`.</div>';
+  } else {
+    const map = L.map("map", { scrollWheelZoom: false }).setView([33, 128], 4);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 12,
+    }).addTo(map);
+
+    const regionCoords = {};
+    HARVEST.filter(r => r.lat != null && r.lng != null).forEach(row => {
+      regionCoords[row.region] = [row.lat, row.lng];
+      const marker = L.circleMarker([row.lat, row.lng], {
+        radius: 8,
+        color: cssVar(colorFor(row)),
+        fillColor: cssVar(colorFor(row)),
+        fillOpacity: 0.9,
+        weight: 3,
+        opacity: 1,
+      }).addTo(map);
+      marker.bindPopup(buildPopupHtml(row));
+    });
+
+    function buildPopupHtml(row) {
+      const div = document.createElement("div");
+      const strong = document.createElement("strong");
+      strong.textContent = row.region + " — " + row.flush;
+      div.appendChild(strong);
+      [row.window_description, row.quality_tier, row.notes].forEach(t => {
+        const p = document.createElement("div");
+        p.textContent = t;
+        div.appendChild(p);
+      });
+      return div;
+    }
+
+    const shopIcon = L.divIcon({
+      className: "",
+      html: '<div class="shop-pin"><span>🍵</span></div>',
+      iconSize: [26, 26],
+      iconAnchor: [13, 26],
+      popupAnchor: [0, -26],
+    });
+
+    // de-dup products by store+product so repeated scrapes don't stack pins
+    const latestProducts = new Map();
+    PRICES.forEach(row => {
+      const key = row.store + "|" + row.product_name;
+      const existing = latestProducts.get(key);
+      if (!existing || row.scraped_at > existing.scraped_at) latestProducts.set(key, row);
+    });
+    [...latestProducts.values()].forEach(row => {
+      const coords = row.region && regionCoords[row.region];
+      if (!coords) return;
+      const marker = L.marker([coords[0] + 0.15, coords[1] + 0.15], { icon: shopIcon }).addTo(map);
+      const div = document.createElement("div");
+      const strong = document.createElement("strong");
+      strong.textContent = row.store + " — " + row.product_name;
+      div.appendChild(strong);
+      const price = document.createElement("div");
+      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency }).format(row.price) + (row.size_grams ? " / " + row.size_grams + "g" : "");
+      div.appendChild(price);
+      const stock = document.createElement("div");
+      stock.textContent = row.in_stock ? "In stock" : "Sold out";
+      div.appendChild(stock);
+      marker.bindPopup(div);
+    });
+  }
+
+  // ---- timeline ----
+  const grid = document.getElementById("tl-grid");
+  if (HARVEST.length) {
+    const monthsRow = document.createElement("div");
+    monthsRow.className = "tl-months";
+    const corner = document.createElement("div");
+    corner.textContent = "Region";
+    monthsRow.appendChild(corner);
+    MONTHS.forEach(m => { const d = document.createElement("div"); d.textContent = m; monthsRow.appendChild(d); });
+    grid.appendChild(monthsRow);
+
+    const sorted = [...HARVEST].sort((a, b) => {
+      if (a.country !== b.country) return a.country.localeCompare(b.country);
+      return a.start_month - b.start_month;
+    });
+
+    sorted.forEach(row => {
+      const r = document.createElement("div");
+      r.className = "tl-row";
+
+      const label = document.createElement("div");
+      label.className = "tl-label";
+      const strong = document.createElement("strong");
+      strong.textContent = row.region;
+      label.appendChild(strong);
+      label.append(row.flush);
+      r.appendChild(label);
+
+      const track = document.createElement("div");
+      track.className = "tl-track";
+      const bar = document.createElement("div");
+      bar.className = "tl-bar";
+      bar.tabIndex = 0;
+      bar.setAttribute("role", "img");
+      bar.setAttribute("aria-label", row.region + " " + row.flush + ", " + row.window_description);
+      const leftPct = ((row.start_month - 1) / 12) * 100;
+      const widthPct = ((row.end_month - row.start_month + 1) / 12) * 100;
+      bar.style.left = leftPct + "%";
+      bar.style.width = widthPct + "%";
+      bar.style.background = fillFor(row);
+      bar.addEventListener("pointerenter", (e) => showTooltip(e, tooltipBody(row.region + " — " + row.flush, [
+        { text: row.window_description },
+        { text: row.quality_tier, muted: true },
+        { text: row.notes },
+      ])));
+      bar.addEventListener("pointermove", positionTooltip);
+      bar.addEventListener("pointerleave", hideTooltip);
+      track.appendChild(bar);
+
+      (row.buy_windows || []).forEach(w => {
+        const strip = document.createElement("div");
+        strip.className = "tl-buy-window";
+        strip.tabIndex = 0;
+        strip.setAttribute("role", "img");
+        strip.setAttribute("aria-label", "Good time to buy: " + w.reason);
+        strip.style.left = (((w.start_month - 1) / 12) * 100) + "%";
+        strip.style.width = (((w.end_month - w.start_month + 1) / 12) * 100) + "%";
+        strip.addEventListener("pointerenter", (e) => showTooltip(e, tooltipBody("🛒 Good time to buy", [{ text: w.reason }])));
+        strip.addEventListener("pointermove", positionTooltip);
+        strip.addEventListener("pointerleave", hideTooltip);
+        track.appendChild(strip);
+      });
+
+      r.appendChild(track);
+
+      grid.appendChild(r);
+    });
+  } else {
+    grid.innerHTML = '<div class="empty-state">No harvest data yet.</div>';
+  }
+
+  // ---- table ----
+  if (HARVEST.length) {
+    const table = document.getElementById("data-table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    ["Country", "Region", "Flush", "Window", "Quality tier", "Used for matcha", "Notes", "Source"].forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    [...HARVEST].sort((a, b) => a.country.localeCompare(b.country) || a.flush_rank - b.flush_rank).forEach(row => {
+      const tr = document.createElement("tr");
+      const cells = [row.country, row.region, row.flush, row.window_description, row.quality_tier, row.used_for_matcha ? "Yes" : "No", row.notes];
+      cells.forEach(c => {
+        const td = document.createElement("td");
+        td.textContent = c;
+        tr.appendChild(td);
+      });
+      const sourceTd = document.createElement("td");
+      const a = document.createElement("a");
+      a.href = row.source_url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = "link";
+      sourceTd.appendChild(a);
+      tr.appendChild(sourceTd);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+  }
+
+  // ---- sources footer ----
+  if (HARVEST.length) {
+    const uniqueSources = [...new Set(HARVEST.map(r => r.source_url))];
+    const sourceList = document.getElementById("source-list");
+    uniqueSources.forEach(src => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = src;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = src;
+      li.appendChild(a);
+      sourceList.appendChild(li);
+    });
+  }
+</script>
+</body>
+</html>
