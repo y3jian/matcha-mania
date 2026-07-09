@@ -89,62 +89,110 @@
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body { background: var(--page); }
+  body { background: var(--surface-1); }
+  html { scroll-behavior: smooth; }
+  #prices, #regions, #calendar { scroll-margin-top: 64px; }
+
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
 
   .viz-root {
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: var(--page);
     color: var(--text-primary);
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 0 20px 60px;
   }
 
-  .hero {
-    margin: 0 -20px 24px;
-    padding: 36px 20px 30px;
-    background: linear-gradient(160deg, var(--brand) 0%, var(--brand-strong) 100%);
-    color: #f6f9f1;
-    border-radius: 0 0 20px 20px;
-  }
-  .hero h1 { font-size: 1.7rem; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
-  .hero .subtitle { margin: 0; opacity: 0.9; font-size: 0.95rem; }
-
-  .callout {
-    background: var(--brand-soft);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    display: flex;
-    gap: 16px;
-    align-items: baseline;
-    flex-wrap: wrap;
-  }
-  .callout .figure { font-size: 1.7rem; font-weight: 700; white-space: nowrap; color: var(--brand-strong); }
-  .callout .desc { color: var(--text-secondary); font-size: 0.92rem; }
-
-  .card {
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     background: var(--surface-1);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px 20px 20px;
-    margin-bottom: 24px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    border-bottom: 1px solid var(--border);
   }
-  .card h2 { font-size: 1.08rem; margin: 0 0 2px; display: flex; align-items: center; gap: 8px; }
-  .card .card-sub { color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 14px; }
+  .site-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .wordmark { font-weight: 700; font-size: 1rem; color: var(--text-primary); text-decoration: none; }
+  .site-nav { display: flex; gap: 20px; flex-wrap: wrap; }
+  .site-nav a { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; }
+  .site-nav a:hover { color: var(--brand); }
 
-  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; font-size: 0.82rem; color: var(--text-secondary); }
+  .site-main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+
+  .page-intro { padding: 32px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .page-intro h1 { font-size: 1.6rem; margin: 0 0 8px; }
+  .page-intro .lede { margin: 0 0 16px; color: var(--text-secondary); font-size: 0.98rem; max-width: 640px; }
+
+  .note-inline {
+    border-left: 3px solid var(--brand);
+    padding: 4px 0 4px 14px;
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    max-width: 720px;
+  }
+  .note-inline strong { color: var(--text-primary); }
+
+  .section { padding: 28px 0; border-bottom: 1px solid var(--border); }
+  .section:last-of-type { border-bottom: none; }
+  .section-head { margin-bottom: 14px; }
+  .section-head h2 { font-size: 1.1rem; margin: 0 0 2px; font-weight: 600; }
+  .section-head .section-sub { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
+
+  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; font-size: 0.82rem; color: var(--text-secondary); }
   .legend-item { display: flex; align-items: center; gap: 6px; }
   .swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
   .swatch.sq { border-radius: 3px; }
+  button.legend-item {
+    font: inherit;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 2px 8px;
+    margin: -2px 0;
+    cursor: pointer;
+    color: inherit;
+  }
+  button.legend-item:hover { border-color: var(--border); }
+  button.legend-item.is-active { background: var(--brand-soft); color: var(--text-primary); font-weight: 600; }
 
   .empty-state { color: var(--text-muted); font-size: 0.88rem; padding: 18px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
 
+  /* filters */
+  .filter-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; font-size: 0.82rem; color: var(--text-secondary); }
+  .filter-row[hidden] { display: none; }
+  .filter-row label { display: flex; align-items: center; gap: 6px; }
+  .filter-row select {
+    font: inherit;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+
   /* price cards */
   .price-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-  .price-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--page); }
+  .price-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--page);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .price-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+  @media (prefers-reduced-motion: reduce) {
+    .price-card:hover { transform: none; }
+  }
   .price-card .store { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; }
   .price-card .name { font-weight: 600; margin: 2px 0 8px; font-size: 0.95rem; }
   .price-card .price-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
@@ -176,19 +224,46 @@
 
   /* timeline */
   .timeline { overflow-x: auto; }
-  .tl-grid { min-width: 640px; }
+  .tl-grid { min-width: 640px; position: relative; }
   .tl-months { display: grid; grid-template-columns: 190px repeat(12, 1fr); font-size: 0.72rem; color: var(--text-muted); border-bottom: 1px solid var(--gridline); padding-bottom: 6px; margin-bottom: 4px; }
   .tl-months div { text-align: center; }
   .tl-months div:first-child { text-align: left; }
-  .tl-row { display: grid; grid-template-columns: 190px repeat(12, 1fr); align-items: center; min-height: 30px; border-bottom: 1px solid var(--gridline); }
+  .tl-row { display: grid; grid-template-columns: 190px repeat(12, 1fr); align-items: center; min-height: 44px; border-bottom: 1px solid var(--gridline); transition: opacity 0.25s ease; }
   .tl-row:last-child { border-bottom: none; }
   .tl-label { font-size: 0.78rem; color: var(--text-secondary); padding-right: 8px; }
-  .tl-label strong { color: var(--text-primary); font-weight: 600; display: block; font-size: 0.8rem; }
-  .tl-track { position: relative; grid-column: 2 / 14; height: 26px; }
-  .tl-bar { position: absolute; top: 0; height: 20px; border-radius: 4px; cursor: pointer; }
+  .tl-label strong { color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
+  .tl-label-meta { display: block; }
+  .tl-in-season-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--status-good); flex: none; }
+  .tl-track { position: relative; grid-column: 2 / 14; height: 40px; }
+  .tl-bar { position: absolute; top: 0; height: 20px; border-radius: 4px; cursor: pointer; transition: width 0.6s ease; }
   .tl-bar:hover, .tl-bar:focus { outline: 2px solid var(--text-primary); outline-offset: 1px; }
-  .tl-buy-window { position: absolute; bottom: 0; height: 3px; border-radius: 2px; background: var(--brand); cursor: pointer; }
-  .tl-buy-window:hover { height: 5px; bottom: -1px; }
+  /* wrapper carries a >=24px hit target; the visible bar inside it stays a thin 3-5px strip */
+  .tl-buy-window-hit { position: absolute; top: 20px; height: 20px; display: flex; align-items: center; cursor: pointer; }
+  .tl-buy-window-hit:focus { outline: 2px solid var(--text-primary); outline-offset: 1px; }
+  .tl-buy-window { width: 100%; height: 3px; border-radius: 2px; background: var(--brand); }
+  .tl-buy-window-hit:hover .tl-buy-window, .tl-buy-window-hit:focus .tl-buy-window { height: 5px; }
+  @media (prefers-reduced-motion: reduce) {
+    .tl-bar { transition: none; }
+  }
+
+  /* line + label stay within the grid's own box (top >= 0) since .timeline's overflow-x:auto
+     implicitly turns overflow-y visible into auto too, which would clip anything positioned
+     above the grid's top edge */
+  .tl-today-line { position: absolute; top: 26px; bottom: 0; width: 2px; background: var(--brand); pointer-events: none; z-index: 1; }
+  .tl-today-line::before {
+    content: "Today";
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--brand);
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
 
   /* tooltip */
   .tooltip {
@@ -213,62 +288,107 @@
   table.data-table th { color: var(--text-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.02em; }
   table.data-table a { color: inherit; }
 
-  footer.sources { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
-  footer.sources a { color: inherit; }
-  footer.sources li { margin-bottom: 3px; }
+  .site-footer { border-top: 1px solid var(--border); }
+  .site-footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .site-footer .site-name { font-size: 0.85rem; color: var(--text-secondary); }
+  .footer-sources { font-size: 0.75rem; color: var(--text-muted); }
+  .footer-sources a { color: inherit; }
+  .footer-sources li { margin-bottom: 3px; }
 </style>
 </head>
 <body>
 <div class="viz-root">
-  <div class="hero">
-    <h1>🍵 Matcha Harvest Map</h1>
-    <p class="subtitle">When and where ceremonial-grade matcha is picked — plus what it costs right now.</p>
-  </div>
-
-  <div class="callout" id="callout">
-    <div class="figure">Early Apr &rarr; late May</div>
-    <div class="desc">Ichibancha (first flush) — the only flush most producers shade and grind into ceremonial matcha — moves north across Japan from Kagoshima to Saitama. Everything later in the year is lower-grade or not matcha at all.</div>
-  </div>
-
-  <div class="card">
-    <h2>🛒 Current prices</h2>
-    <p class="card-sub">Latest scrape per tracked product. Refreshed daily by the pipeline.</p>
-    <div id="price-grid" class="price-grid"></div>
-  </div>
-
-  <div class="card">
-    <h2>🗺️ Where it's grown</h2>
-    <p class="card-sub">Round pins are harvest regions; leaf pins are stores we're tracking. Click either for details.</p>
-    <div class="legend" id="map-legend"></div>
-    <div class="map-wrap">
-      <div id="map" role="img" aria-label="Map of matcha and tea growing regions in China, South Korea, and Japan, with markers for tracked stores"></div>
-      <div class="tooltip" id="tooltip"></div>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="wordmark" href="#top">🍵 Matcha Mania</a>
+      <nav class="site-nav">
+        <a href="#prices">Prices</a>
+        <a href="#regions">Regions &amp; map</a>
+        <a href="#calendar">Harvest calendar</a>
+      </nav>
     </div>
-    <p class="map-note">Pins mark representative city/county centers for each growing region, not surveyed farm boundaries.</p>
-  </div>
+  </header>
 
-  <div class="card">
-    <h2>📅 Harvest calendar</h2>
-    <p class="card-sub">Bars in color are graded into matcha; gray bars are the same plants' later pickings, sold as bancha/hojicha or bulk leaf instead. The underline marks a rule-based "good time to buy" window — see note below.</p>
-    <div class="legend" id="tl-legend"></div>
-    <div class="timeline">
-      <div class="tl-grid" id="tl-grid"></div>
+  <main class="site-main" id="top">
+    <div class="page-intro reveal">
+      <h1>Matcha Harvest Map</h1>
+      <p class="lede">When and where ceremonial-grade matcha is picked — plus what it costs right now.</p>
+      <p class="note-inline"><strong>Early Apr &rarr; late May:</strong> Ichibancha (first flush) — the only flush most producers shade and grind into ceremonial matcha — moves north across Japan from Kagoshima to Saitama. Everything later in the year is lower-grade or not matcha at all.</p>
     </div>
-    <p class="map-note">"Good time to buy" is a rule derived from the sourced harvest calendar (fresh-crop window + autumn kuradashi release where documented) — not a model fit on price history. No public source publishes month-by-month retail matcha prices, and our own price tracker doesn't have enough history yet to fit one.</p>
-  </div>
 
-  <div class="card">
-    <details class="table-toggle">
-      <summary>View full harvest data table</summary>
-      <div style="overflow-x:auto">
-        <table class="data-table" id="data-table"></table>
+    <section class="section reveal" id="prices">
+      <div class="section-head">
+        <h2>Current prices</h2>
+        <p class="section-sub">Latest scrape per tracked product. Refreshed daily by the pipeline.</p>
       </div>
-    </details>
-  </div>
+      <div class="filter-row" id="price-filters" hidden>
+        <label>Sort
+          <select id="price-sort">
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="store">Store name</option>
+          </select>
+        </label>
+        <label>Region
+          <select id="price-region">
+            <option value="all">All regions</option>
+          </select>
+        </label>
+      </div>
+      <div id="price-grid" class="price-grid"></div>
+    </section>
 
-  <footer class="sources">
-    <strong style="color:var(--text-secondary)">Sources</strong>
-    <ul id="source-list"></ul>
+    <section class="section reveal" id="regions">
+      <div class="section-head">
+        <h2>Where it's grown</h2>
+        <p class="section-sub">Round pins are harvest regions; leaf pins are stores we're tracking. Click either for details.</p>
+      </div>
+      <div class="legend" id="map-legend"></div>
+      <div class="map-wrap">
+        <div id="map" role="img" aria-label="Map of matcha and tea growing regions in China, South Korea, and Japan, with markers for tracked stores"></div>
+        <div class="tooltip" id="tooltip"></div>
+      </div>
+      <p class="map-note">Pins mark representative city/county centers for each growing region, not surveyed farm boundaries.</p>
+    </section>
+
+    <section class="section reveal" id="calendar">
+      <div class="section-head">
+        <h2>Harvest calendar</h2>
+        <p class="section-sub">Bars in color are graded into matcha; gray bars are the same plants' later pickings, sold as bancha/hojicha or bulk leaf instead. The underline marks a rule-based "good time to buy" window — see note below. Click a legend item to isolate a region.</p>
+      </div>
+      <div class="legend" id="tl-legend"></div>
+      <div class="timeline">
+        <div class="tl-grid" id="tl-grid"></div>
+      </div>
+      <p class="map-note">"Good time to buy" is a rule derived from the sourced harvest calendar (fresh-crop window + autumn kuradashi release where documented) — not a model fit on price history. No public source publishes month-by-month retail matcha prices, and our own price tracker doesn't have enough history yet to fit one.</p>
+    </section>
+
+    <section class="section reveal">
+      <details class="table-toggle">
+        <summary>View full harvest data table</summary>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="data-table"></table>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="site-name">Matcha Mania — matcha harvest calendar and price tracker</div>
+      <div class="footer-sources">
+        <strong style="color:var(--text-secondary)">Sources</strong>
+        <ul id="source-list"></ul>
+      </div>
+    </div>
   </footer>
 </div>
 
@@ -279,6 +399,17 @@
   const HARVEST = window.HARVEST_SEASONS || [];
   const PRICES = window.MATCHA_PRICES || [];
   const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const now = new Date();
+
+  function relativeTime(date) {
+    const days = Math.floor((now - date) / 86400000);
+    if (days <= 0) return "today";
+    if (days === 1) return "yesterday";
+    if (days < 7) return days + " days ago";
+    if (days < 30) { const weeks = Math.floor(days / 7); return weeks + (weeks === 1 ? " week ago" : " weeks ago"); }
+    const months = Math.floor(days / 30);
+    return months + (months === 1 ? " month ago" : " months ago");
+  }
 
   const COUNTRY_COLOR = { "Japan": "var(--series-japan)", "China": "var(--series-china)", "South Korea": "var(--series-korea)" };
   function colorFor(row) { return row.used_for_matcha ? COUNTRY_COLOR[row.country] : "var(--series-muted)"; }
@@ -307,6 +438,27 @@
     tooltip.style.top = y + "px";
   }
   function hideTooltip() { tooltip.style.display = "none"; }
+  function showTooltipNearElement(el, html) {
+    tooltip.innerHTML = "";
+    tooltip.appendChild(html);
+    tooltip.style.display = "block";
+    const rect = el.getBoundingClientRect();
+    const pad = 14;
+    let x = rect.left;
+    let y = rect.bottom + pad;
+    if (x + 270 > window.innerWidth) x = window.innerWidth - 270 - pad;
+    if (y + 120 > window.innerHeight) y = rect.top - 120 - pad;
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+  }
+  // keeps hover and keyboard focus showing identical tooltip content
+  function bindHoverTooltip(el, buildContent) {
+    el.addEventListener("pointerenter", (e) => showTooltip(e, buildContent()));
+    el.addEventListener("pointermove", positionTooltip);
+    el.addEventListener("pointerleave", hideTooltip);
+    el.addEventListener("focus", () => showTooltipNearElement(el, buildContent()));
+    el.addEventListener("blur", hideTooltip);
+  }
   function tooltipBody(title, lines) {
     const wrap = document.createElement("div");
     const strong = document.createElement("strong");
@@ -322,26 +474,43 @@
   }
 
   // ---- legends ----
-  function buildLegend(el, items) {
+  // interactive: true renders each item as a toggle button that calls onToggle(group) on click
+  function buildLegend(el, items, { interactive = false, onToggle } = {}) {
     items.forEach(it => {
-      const div = document.createElement("div");
-      div.className = "legend-item";
+      const isToggle = interactive && it.group;
+      const item = document.createElement(isToggle ? "button" : "div");
+      item.className = "legend-item";
+      if (isToggle) {
+        item.type = "button";
+        item.dataset.group = it.group;
+        item.addEventListener("click", () => onToggle(it.group));
+      }
       const sw = document.createElement("span");
       sw.className = "swatch" + (it.square ? " sq" : "");
       sw.style.background = it.color;
       const label = document.createElement("span");
       label.textContent = it.label;
-      div.append(sw, label);
-      el.appendChild(div);
+      item.append(sw, label);
+      el.appendChild(item);
     });
   }
   const legendItems = [
-    { label: "Japan", color: "var(--series-japan)" },
-    { label: "China", color: "var(--series-china)" },
-    { label: "South Korea", color: "var(--series-korea)" },
-    { label: "Not used for matcha", color: "var(--series-muted)" },
+    { label: "Japan", color: "var(--series-japan)", group: "Japan" },
+    { label: "China", color: "var(--series-china)", group: "China" },
+    { label: "South Korea", color: "var(--series-korea)", group: "South Korea" },
+    { label: "Not used for matcha", color: "var(--series-muted)", group: "muted" },
   ];
-  buildLegend(document.getElementById("tl-legend"), [...legendItems, { label: "🛒 Good time to buy", color: "var(--brand)", square: true }]);
+  let timelineFilter = null;
+  function setTimelineFilter(group) {
+    timelineFilter = timelineFilter === group ? null : group;
+    document.querySelectorAll(".tl-row").forEach(row => {
+      row.style.opacity = !timelineFilter || row.dataset.group === timelineFilter ? "1" : "0.25";
+    });
+    document.querySelectorAll("#tl-legend .legend-item[data-group]").forEach(btn => {
+      btn.classList.toggle("is-active", btn.dataset.group === timelineFilter);
+    });
+  }
+  buildLegend(document.getElementById("tl-legend"), [...legendItems, { label: "🛒 Good time to buy", color: "var(--brand)", square: true }], { interactive: true, onToggle: setTimelineFilter });
   buildLegend(document.getElementById("map-legend"), [...legendItems, { label: "Tracked store", color: "var(--brand)", square: true }]);
 
   // ---- current prices ----
@@ -359,7 +528,9 @@
       const existing = latestByKey.get(key);
       if (!existing || row.scraped_at > existing.scraped_at) latestByKey.set(key, row);
     });
-    [...latestByKey.values()].sort((a, b) => a.price - b.price).forEach(row => {
+    const allPriceRows = [...latestByKey.values()];
+
+    function buildPriceCard(row) {
       const card = document.createElement("div");
       card.className = "price-card";
 
@@ -392,7 +563,8 @@
       const meta = document.createElement("div");
       meta.className = "meta";
       const checked = new Date(row.scraped_at);
-      meta.textContent = "Checked " + checked.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      meta.textContent = "Checked " + relativeTime(checked);
+      meta.title = checked.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
       card.appendChild(meta);
 
       const link = document.createElement("div");
@@ -405,8 +577,39 @@
       link.appendChild(a);
       card.appendChild(link);
 
-      priceGrid.appendChild(card);
+      return card;
+    }
+
+    const sortSelect = document.getElementById("price-sort");
+    const regionSelect = document.getElementById("price-region");
+    [...new Set(allPriceRows.map(r => r.region || "Unspecified"))].sort().forEach(region => {
+      const opt = document.createElement("option");
+      opt.value = region;
+      opt.textContent = region;
+      regionSelect.appendChild(opt);
     });
+    document.getElementById("price-filters").hidden = allPriceRows.length <= 1;
+
+    function renderPriceGrid() {
+      let rows = [...allPriceRows];
+      if (regionSelect.value !== "all") rows = rows.filter(r => (r.region || "Unspecified") === regionSelect.value);
+      if (sortSelect.value === "price-desc") rows.sort((a, b) => b.price - a.price);
+      else if (sortSelect.value === "store") rows.sort((a, b) => a.store.localeCompare(b.store));
+      else rows.sort((a, b) => a.price - b.price);
+
+      priceGrid.innerHTML = "";
+      if (!rows.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = "No products match this filter.";
+        priceGrid.appendChild(empty);
+        return;
+      }
+      rows.forEach(row => priceGrid.appendChild(buildPriceCard(row)));
+    }
+    sortSelect.addEventListener("change", renderPriceGrid);
+    regionSelect.addEventListener("change", renderPriceGrid);
+    renderPriceGrid();
   }
 
   // ---- map ----
@@ -495,16 +698,29 @@
       return a.start_month - b.start_month;
     });
 
+    const currentMonth = now.getMonth() + 1;
+    function isInSeason(row) { return row.used_for_matcha && currentMonth >= row.start_month && currentMonth <= row.end_month; }
+
     sorted.forEach(row => {
       const r = document.createElement("div");
       r.className = "tl-row";
+      r.dataset.group = row.used_for_matcha ? row.country : "muted";
 
       const label = document.createElement("div");
       label.className = "tl-label";
       const strong = document.createElement("strong");
       strong.textContent = row.region;
+      if (isInSeason(row)) {
+        const dot = document.createElement("span");
+        dot.className = "tl-in-season-dot";
+        dot.title = "In season now";
+        strong.appendChild(dot);
+      }
       label.appendChild(strong);
-      label.append(row.flush);
+      const meta = document.createElement("div");
+      meta.className = "tl-label-meta";
+      meta.textContent = row.flush;
+      label.appendChild(meta);
       r.appendChild(label);
 
       const track = document.createElement("div");
@@ -517,37 +733,49 @@
       const leftPct = ((row.start_month - 1) / 12) * 100;
       const widthPct = ((row.end_month - row.start_month + 1) / 12) * 100;
       bar.style.left = leftPct + "%";
-      bar.style.width = widthPct + "%";
+      bar.style.width = "0%";
+      bar.dataset.targetWidth = widthPct + "%";
       bar.style.background = fillFor(row);
-      bar.addEventListener("pointerenter", (e) => showTooltip(e, tooltipBody(row.region + " — " + row.flush, [
+      bindHoverTooltip(bar, () => tooltipBody(row.region + " — " + row.flush, [
         { text: row.window_description },
         { text: row.quality_tier, muted: true },
         { text: row.notes },
-      ])));
-      bar.addEventListener("pointermove", positionTooltip);
-      bar.addEventListener("pointerleave", hideTooltip);
+      ]));
       track.appendChild(bar);
 
       (row.buy_windows || []).forEach(w => {
+        const hit = document.createElement("div");
+        hit.className = "tl-buy-window-hit";
+        hit.tabIndex = 0;
+        hit.setAttribute("role", "img");
+        hit.setAttribute("aria-label", "Good time to buy: " + w.reason);
+        hit.style.left = (((w.start_month - 1) / 12) * 100) + "%";
+        hit.style.width = (((w.end_month - w.start_month + 1) / 12) * 100) + "%";
         const strip = document.createElement("div");
         strip.className = "tl-buy-window";
-        strip.tabIndex = 0;
-        strip.setAttribute("role", "img");
-        strip.setAttribute("aria-label", "Good time to buy: " + w.reason);
-        strip.style.left = (((w.start_month - 1) / 12) * 100) + "%";
-        strip.style.width = (((w.end_month - w.start_month + 1) / 12) * 100) + "%";
-        strip.addEventListener("pointerenter", (e) => showTooltip(e, tooltipBody("🛒 Good time to buy", [{ text: w.reason }])));
-        strip.addEventListener("pointermove", positionTooltip);
-        strip.addEventListener("pointerleave", hideTooltip);
-        track.appendChild(strip);
+        hit.appendChild(strip);
+        bindHoverTooltip(hit, () => tooltipBody("🛒 Good time to buy", [{ text: w.reason }]));
+        track.appendChild(hit);
       });
 
       r.appendChild(track);
 
       grid.appendChild(r);
     });
+
+    const todayLine = document.createElement("div");
+    todayLine.className = "tl-today-line";
+    const dayInMonth = new Date(now.getFullYear(), currentMonth, 0).getDate();
+    const monthFraction = (currentMonth - 1 + (now.getDate() - 1) / dayInMonth) / 12;
+    todayLine.style.left = `calc(190px + (100% - 190px) * ${monthFraction})`;
+    grid.appendChild(todayLine);
   } else {
     grid.innerHTML = '<div class="empty-state">No harvest data yet.</div>';
+  }
+
+  // grows the timeline bars from 0 to their real width — called once the calendar section scrolls into view
+  function growTimelineBars() {
+    document.querySelectorAll(".tl-bar").forEach(bar => { bar.style.width = bar.dataset.targetWidth; });
   }
 
   // ---- table ----
@@ -584,6 +812,17 @@
     });
     table.appendChild(tbody);
   }
+
+  // ---- scroll reveal ----
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      if (entry.target.id === "calendar") growTimelineBars();
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
 
   // ---- sources footer ----
   if (HARVEST.length) {

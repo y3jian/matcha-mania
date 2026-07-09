@@ -8,7 +8,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://www.jadeleafmatcha.com/products/organic-barista-edition-ceremonial-matcha",
     "region": null,
-    "scraped_at": "2026-07-03T14:59:57.592744+00:00"
+    "scraped_at": "2026-07-04T12:02:53.732356+00:00"
   },
   {
     "store": "Jade Leaf Matcha",
@@ -19,7 +19,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://www.jadeleafmatcha.com/products/organic-barista-edition-ceremonial-matcha",
     "region": null,
-    "scraped_at": "2026-07-03T14:59:57.592744+00:00"
+    "scraped_at": "2026-07-04T12:02:53.732356+00:00"
   },
   {
     "store": "Jade Leaf Matcha",
@@ -30,7 +30,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://www.jadeleafmatcha.com/products/organic-barista-edition-ceremonial-matcha",
     "region": null,
-    "scraped_at": "2026-07-03T14:59:57.592744+00:00"
+    "scraped_at": "2026-07-04T12:02:53.732356+00:00"
   },
   {
     "store": "Nio Teas",
@@ -41,7 +41,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://nioteas.com/products/matcha-tea-washimine",
     "region": "Kyoto (Uji)",
-    "scraped_at": "2026-07-03T14:59:57.134122+00:00"
+    "scraped_at": "2026-07-04T12:02:53.005685+00:00"
   },
   {
     "store": "Nio Teas",
@@ -52,7 +52,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://nioteas.com/products/matcha-tea-washimine",
     "region": "Kyoto (Uji)",
-    "scraped_at": "2026-07-03T14:59:57.134122+00:00"
+    "scraped_at": "2026-07-04T12:02:53.005685+00:00"
   },
   {
     "store": "Rocky's Matcha",
@@ -63,7 +63,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://www.rockysmatcha.com/products/rockys-matcha-ceremonial-blend-matcha-20g",
     "region": "Fukuoka (Yame)",
-    "scraped_at": "2026-07-03T14:59:56.629744+00:00"
+    "scraped_at": "2026-07-04T12:02:52.112009+00:00"
   },
   {
     "store": "Matchaeologist",
@@ -74,7 +74,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://www.matchaeologist.com/products/meiko-ceremonial-matcha",
     "region": null,
-    "scraped_at": "2026-07-03T14:59:56.161734+00:00"
+    "scraped_at": "2026-07-04T12:02:51.108601+00:00"
   },
   {
     "store": "Encha",
@@ -85,7 +85,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://encha.com/products/encha-ceremonial-grade",
     "region": "Kyoto (Uji)",
-    "scraped_at": "2026-07-03T14:59:55.605100+00:00"
+    "scraped_at": "2026-07-04T12:02:49.887277+00:00"
   },
   {
     "store": "Encha",
@@ -96,7 +96,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://encha.com/products/encha-ceremonial-grade",
     "region": "Kyoto (Uji)",
-    "scraped_at": "2026-07-03T14:59:55.605100+00:00"
+    "scraped_at": "2026-07-04T12:02:49.887277+00:00"
   },
   {
     "store": "Encha",
@@ -107,7 +107,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://encha.com/products/encha-ceremonial-grade",
     "region": "Kyoto (Uji)",
-    "scraped_at": "2026-07-03T14:59:55.605100+00:00"
+    "scraped_at": "2026-07-04T12:02:49.887277+00:00"
   },
   {
     "store": "Ippodo",
@@ -118,7 +118,7 @@ window.MATCHA_PRICES = [
     "in_stock": 1,
     "url": "https://ippodotea.com/products/ummon-no-mukashi-40g",
     "region": "Kyoto (Uji)",
-    "scraped_at": "2026-07-03T14:59:54.602962+00:00"
+    "scraped_at": "2026-07-04T12:02:48.909452+00:00"
   },
   {
     "store": "Kettl",
@@ -129,6 +129,6 @@ window.MATCHA_PRICES = [
     "in_stock": 0,
     "url": "https://kettl.co/products/kiwami-matcha",
     "region": "Fukuoka (Yame)",
-    "scraped_at": "2026-07-03T14:59:54.176507+00:00"
+    "scraped_at": "2026-07-04T12:02:48.224451+00:00"
   }
 ];
