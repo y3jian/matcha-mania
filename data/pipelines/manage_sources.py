@@ -182,6 +182,14 @@ def add_source(
 
     Returns the product's title. Raises TrackingError for any user-facing failure.
     """
+    # normalize away query strings/fragments (e.g. a URL copied with "?variant=..." from a
+    # specific size selected on the page) — every variant is scraped from one product URL
+    # regardless, so a variant-specific query string stored as the "canonical" URL is just
+    # misleading, not functional; stripping it here also means a plain and a variant-tagged
+    # copy of the same link are correctly recognized as the same product below
+    parsed = urlparse(url)
+    url = f"{parsed.scheme}://{parsed.netloc}{parsed.path.rstrip('/')}"
+
     text = SOURCES_PATH.read_text()
     config = yaml.safe_load(text)
 
