@@ -36,7 +36,9 @@ class TrackingError(Exception):
 STORE_HEADER_RE = re.compile(r'^  - name: (.+)$', re.MULTILINE)
 CURRENCY_LINE_RE = re.compile(r'^    currency: .+$', re.MULTILINE)
 PRODUCT_URL_RE = re.compile(r'^      - url: (.+)$', re.MULTILINE)
-REGION_LINE_RE = re.compile(r'^        region: .*$', re.MULTILINE)
+
+# per-product fields, keyed by name for _set_product_field()
+PRODUCT_FIELDS = ("region", "grade", "cultivar")
 
 
 def _unquote_yaml_scalar(raw: str) -> str:
@@ -122,17 +124,37 @@ def _remove_span(text: str, start: int, end: int, blank_line_between: bool) -> s
     return before + ("\n\n" if blank_line_between else "\n") + after
 
 
-def _render_product(url: str, region: Optional[str], indent: str) -> str:
-    region_repr = "null" if region is None else _yaml_scalar(region)
-    return f"{indent}- url: {_yaml_scalar(url)}\n{indent}  region: {region_repr}\n"
+def _set_product_field(text: str, product_start: int, product_end: int, field: str, value: Optional[str]) -> str:
+    """Set a `field: value` line within a product's own span — replacing it in place if
+    already present, or appending it after the product's last existing line if not.
+
+    Appending-if-missing matters because grade/cultivar postdate this config format: most
+    existing entries only have url+region, so editing one to add a grade for the first
+    time has nothing to replace yet.
+    """
+    value_repr = "null" if value is None else _yaml_scalar(value)
+    line_re = re.compile(rf'^        {re.escape(field)}: .*$', re.MULTILINE)
+    m = line_re.search(text, product_start, product_end)
+    if m:
+        return text[:m.start()] + f"        {field}: {value_repr}" + text[m.end():]
+    trimmed_end = product_start + len(text[product_start:product_end].rstrip())
+    return text[:trimmed_end] + f"\n        {field}: {value_repr}" + text[trimmed_end:]
 
 
-def _render_store(name: str, currency: str, url: str, region: Optional[str]) -> str:
+def _render_product(url: str, region: Optional[str], grade: Optional[str], cultivar: Optional[str], indent: str) -> str:
+    lines = [f"{indent}- url: {_yaml_scalar(url)}\n"]
+    for field, value in (("region", region), ("grade", grade), ("cultivar", cultivar)):
+        value_repr = "null" if value is None else _yaml_scalar(value)
+        lines.append(f"{indent}  {field}: {value_repr}\n")
+    return "".join(lines)
+
+
+def _render_store(name: str, currency: str, url: str, region: Optional[str], grade: Optional[str], cultivar: Optional[str]) -> str:
     return (
         f"  - name: {_yaml_scalar(name)}\n"
         f"    currency: {_yaml_scalar(currency)}\n"
         f"    products:\n"
-        f"{_render_product(url, region, '      ')}"
+        f"{_render_product(url, region, grade, cultivar, '      ')}"
     )
 
 
@@ -143,9 +165,20 @@ def _default_store_name(url: str, raw_product: dict) -> str:
     return urlparse(url).netloc.removeprefix("www.")
 
 
-def add_source(url: str, store: Optional[str] = None, region: Optional[str] = None, currency: str = "USD") -> str:
+def add_source(
+    url: str,
+    store: Optional[str] = None,
+    region: Optional[str] = None,
+    currency: str = "USD",
+    grade: Optional[str] = None,
+    cultivar: Optional[str] = None,
+) -> str:
     """Validate a Shopify product URL, add it to db/config/sources.yaml, scrape it once,
     and export the refreshed price data so it shows up on the site immediately.
+
+    grade/cultivar are hand-entered, not scraped (Shopify pages don't expose them in a
+    structured way) — pass them along if you know them; they power the "similar matcha"
+    recommendations elsewhere.
 
     Returns the product's title. Raises TrackingError for any user-facing failure.
     """
@@ -187,30 +220,32 @@ def add_source(url: str, store: Optional[str] = None, region: Optional[str] = No
 
     if target:
         _, _, end = target
-        new_text = _splice(text, end, _render_product(url, region, "      "), blank_line_before=False)
+        new_text = _splice(text, end, _render_product(url, region, grade, cultivar, "      "), blank_line_before=False)
     else:
         last_end = blocks[-1][2] if blocks else len(text)
-        new_text = _splice(text, last_end, _render_store(store_name, currency, url, region), blank_line_before=True)
+        new_text = _splice(text, last_end, _render_store(store_name, currency, url, region, grade, cultivar), blank_line_before=True)
 
     yaml.safe_load(new_text)  # validate before writing — never leave a broken config file on disk
     SOURCES_PATH.write_text(new_text)
 
-    rows = transform_product(raw_product, store=store_name, currency=currency, url=url, region=region)
+    rows = transform_product(raw_product, store=store_name, currency=currency, url=url, region=region, grade=grade, cultivar=cultivar)
     load_matcha_rows(rows)
     export_matcha_prices()
 
     return raw_product.get("title")
 
 
-def edit_source(url: str, store=UNSET, region=UNSET, currency=UNSET) -> dict:
-    """Edit an already-tracked product. `region` is per-product; `store` and `currency`
-    are store-level and apply to every product under that store. Pass UNSET (the default)
-    for any field you don't want to change; pass region=None to clear it.
+def edit_source(url: str, store=UNSET, region=UNSET, currency=UNSET, grade=UNSET, cultivar=UNSET) -> dict:
+    """Edit an already-tracked product. `region`/`grade`/`cultivar` are per-product;
+    `store`/`currency` are store-level and apply to every product under that store. Pass
+    UNSET (the default) for any field you don't want to change; pass e.g. region=None to
+    clear a per-product field.
 
     Already-scraped rows in the database are updated immediately (not just the config)
     so the site reflects the correction without waiting for the next scrape.
-    Returns the product's final {"store", "currency", "region"}. Raises TrackingError
-    if the URL isn't tracked, or a store rename would collide with an existing store.
+    Returns the product's final {"store", "currency", "region", "grade", "cultivar"}.
+    Raises TrackingError if the URL isn't tracked, or a store rename would collide with
+    an existing store.
     """
     text = SOURCES_PATH.read_text()
     found = _find_product(text, url)
@@ -236,10 +271,12 @@ def edit_source(url: str, store=UNSET, region=UNSET, currency=UNSET) -> dict:
         text = text[:m.start()] + f"    currency: {_yaml_scalar(currency)}" + text[m.end():]
         found = _find_product(text, url)
 
-    if region is not UNSET:
-        region_repr = "null" if region is None else _yaml_scalar(region)
-        m = REGION_LINE_RE.search(text, found["product_start"], found["product_end"])
-        text = text[:m.start()] + f"        region: {region_repr}" + text[m.end():]
+    per_product_fields = {"region": region, "grade": grade, "cultivar": cultivar}
+    for field, value in per_product_fields.items():
+        if value is UNSET:
+            continue
+        text = _set_product_field(text, found["product_start"], found["product_end"], field, value)
+        found = _find_product(text, url)
 
     new_config = yaml.safe_load(text)  # validates the edit and doubles as the source of truth below
     SOURCES_PATH.write_text(text)
@@ -252,13 +289,20 @@ def edit_source(url: str, store=UNSET, region=UNSET, currency=UNSET) -> dict:
         changed_db_fields["store"] = final_store["name"]
     if currency is not UNSET and currency:
         changed_db_fields["currency"] = final_store["currency"]
-    if region is not UNSET:
-        changed_db_fields["region"] = final_product["region"]
+    for field, value in per_product_fields.items():
+        if value is not UNSET:
+            changed_db_fields[field] = final_product.get(field)
     if changed_db_fields:
         update_matcha_rows(url, **changed_db_fields)
         export_matcha_prices()
 
-    return {"store": final_store["name"], "currency": final_store["currency"], "region": final_product["region"]}
+    return {
+        "store": final_store["name"],
+        "currency": final_store["currency"],
+        "region": final_product.get("region"),
+        "grade": final_product.get("grade"),
+        "cultivar": final_product.get("cultivar"),
+    }
 
 
 def remove_source(url: str) -> str:
@@ -286,7 +330,7 @@ def remove_source(url: str) -> str:
 
 
 def _add_command(args) -> None:
-    title = add_source(args.url, store=args.store, region=args.region, currency=args.currency)
+    title = add_source(args.url, store=args.store, region=args.region, currency=args.currency, grade=args.grade, cultivar=args.cultivar)
     print(f"Added '{title}' and refreshed web/data/matcha_prices.js.")
 
 
@@ -296,6 +340,8 @@ def _edit_command(args) -> None:
         store=args.store if args.store is not None else UNSET,
         region=args.region if args.region is not None else UNSET,
         currency=args.currency if args.currency is not None else UNSET,
+        grade=args.grade if args.grade is not None else UNSET,
+        cultivar=args.cultivar if args.cultivar is not None else UNSET,
     )
     print(f"Updated {args.url} -> {result} and refreshed web/data/matcha_prices.js.")
 
@@ -314,13 +360,17 @@ def main() -> None:
     add_parser.add_argument("--store", help="Store display name (defaults to the Shopify vendor field)")
     add_parser.add_argument("--region", help="Harvest region label, e.g. 'Kyoto (Uji)' (optional)")
     add_parser.add_argument("--currency", default="USD", help="Currency code, only used if this is a new store (default: USD)")
+    add_parser.add_argument("--grade", help="Grade label, e.g. 'ceremonial' (optional, hand-entered)")
+    add_parser.add_argument("--cultivar", help="Cultivar, e.g. 'Samidori' (optional, hand-entered)")
     add_parser.set_defaults(func=_add_command)
 
-    edit_parser = subparsers.add_parser("edit", help="Edit an already-tracked product's store/region/currency")
+    edit_parser = subparsers.add_parser("edit", help="Edit an already-tracked product's store/region/currency/grade/cultivar")
     edit_parser.add_argument("url", help="URL of the already-tracked product to edit")
     edit_parser.add_argument("--store", help="Rename the store (applies to all its products)")
     edit_parser.add_argument("--region", help="Set this product's harvest region")
     edit_parser.add_argument("--currency", help="Change the store's currency (applies to all its products)")
+    edit_parser.add_argument("--grade", help="Set this product's grade")
+    edit_parser.add_argument("--cultivar", help="Set this product's cultivar")
     edit_parser.set_defaults(func=_edit_command)
 
     remove_parser = subparsers.add_parser("remove", help="Stop tracking a product")

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from data.pipelines.db import REPO_ROOT, connect
 from data.pipelines.export_web_data import export_harvest_seasons
@@ -7,8 +8,8 @@ DB_PATH = REPO_ROOT / "db" / "matcha_mania.db"
 SEED_PATH = REPO_ROOT / "db" / "seed" / "harvest_seasons.sql"
 
 
-def load_harvest_seasons(db_path: Path = DB_PATH) -> int:
-    conn = connect(db_path)
+def load_harvest_seasons(db_path: Optional[Path] = None) -> int:
+    conn = connect(db_path or DB_PATH)
     try:
         conn.execute("DELETE FROM harvest_seasons")
         conn.executescript(SEED_PATH.read_text())

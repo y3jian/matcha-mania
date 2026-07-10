@@ -1,6 +1,7 @@
 import json
 import sqlite3
 from pathlib import Path
+from typing import Optional
 
 from data.pipelines.db import REPO_ROOT, connect
 from data.pipelines.best_time import best_buy_windows
@@ -16,13 +17,13 @@ HARVEST_SEASONS_QUERY = """
 """
 
 MATCHA_PRICES_QUERY = """
-    SELECT store, product_name, size_grams, price, currency, in_stock, url, region, scraped_at
+    SELECT store, product_name, variant_label, size_grams, price, currency, in_stock, url, region, grade, cultivar, scraped_at
     FROM matcha
     ORDER BY scraped_at DESC
 """
 
 
-def _export(query: str, global_name: str, filename: str, db_path: Path) -> int:
+def _export(query: str, global_name: str, filename: str, db_path: Path, output_dir: Path) -> int:
     conn = connect(db_path)
     try:
         conn.row_factory = sqlite3.Row
@@ -30,14 +31,15 @@ def _export(query: str, global_name: str, filename: str, db_path: Path) -> int:
     finally:
         conn.close()
 
-    WEB_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = WEB_DATA_DIR / filename
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / filename
     output_path.write_text(f"window.{global_name} = " + json.dumps(rows, indent=2) + ";\n")
     return len(rows)
 
 
-def export_harvest_seasons(db_path: Path = DB_PATH) -> int:
-    conn = connect(db_path)
+def export_harvest_seasons(db_path: Optional[Path] = None, output_dir: Optional[Path] = None) -> int:
+    output_dir = output_dir or WEB_DATA_DIR
+    conn = connect(db_path or DB_PATH)
     try:
         conn.row_factory = sqlite3.Row
         rows = [dict(row) for row in conn.execute(HARVEST_SEASONS_QUERY)]
@@ -47,14 +49,14 @@ def export_harvest_seasons(db_path: Path = DB_PATH) -> int:
     for row in rows:
         row["buy_windows"] = best_buy_windows(row)
 
-    WEB_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = WEB_DATA_DIR / "harvest_seasons.js"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / "harvest_seasons.js"
     output_path.write_text("window.HARVEST_SEASONS = " + json.dumps(rows, indent=2) + ";\n")
     return len(rows)
 
 
-def export_matcha_prices(db_path: Path = DB_PATH) -> int:
-    return _export(MATCHA_PRICES_QUERY, "MATCHA_PRICES", "matcha_prices.js", db_path)
+def export_matcha_prices(db_path: Optional[Path] = None, output_dir: Optional[Path] = None) -> int:
+    return _export(MATCHA_PRICES_QUERY, "MATCHA_PRICES", "matcha_prices.js", db_path or DB_PATH, output_dir or WEB_DATA_DIR)
 
 
 if __name__ == "__main__":

@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 *.db
 logs/*.log
+web/data/photos/

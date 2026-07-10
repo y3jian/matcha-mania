@@ -29,7 +29,14 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+        // clone() must happen synchronously, right here, before the body can be read by
+        // anything else — deferring it into caches.open().then() (async) let the original
+        // response start streaming to the page first, so by the time that callback ran the
+        // body was already locked, throwing "Response body is already used".
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
         return response;
       })
       .catch(() => caches.match(event.request))

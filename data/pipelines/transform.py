@@ -15,8 +15,21 @@ def parse_size_grams(*texts: str) -> Optional[int]:
     return None
 
 
-def transform_product(raw_product: dict, store: str, currency: str, url: str, region: Optional[str]) -> list:
-    """Turn a Shopify product.js payload into rows matching the matcha table schema."""
+def transform_product(
+    raw_product: dict,
+    store: str,
+    currency: str,
+    url: str,
+    region: Optional[str],
+    grade: Optional[str] = None,
+    cultivar: Optional[str] = None,
+) -> list:
+    """Turn a Shopify product.js payload into rows matching the matcha table schema.
+
+    grade/cultivar are hand-curated metadata (like region) — Shopify product pages don't
+    expose them in a structured, scrapable way, so they come from sources.yaml, not the
+    scrape itself.
+    """
     scraped_at = datetime.now(timezone.utc).isoformat()
     rows = []
     for variant in raw_product["variants"]:
@@ -26,19 +39,23 @@ def transform_product(raw_product: dict, store: str, currency: str, url: str, re
             continue
 
         variant_title = variant.get("title")
-        product_name = raw_product["title"]
-        if variant_title and variant_title != "Default Title":
-            product_name = f"{product_name} ({variant_title})"
+        # size is already captured structurally in size_grams — keeping it (and any other
+        # variant detail like "Tin" / "15-30 Servings") appended to the title just crowds
+        # the display; it's kept separately as variant_label instead, for a notes line.
+        variant_label = variant_title if variant_title and variant_title != "Default Title" else None
 
         rows.append({
             "store": store,
-            "product_name": product_name,
+            "product_name": raw_product["title"],
+            "variant_label": variant_label,
             "size_grams": size_grams,
             "price": variant["price"] / 100,
             "currency": currency,
             "in_stock": bool(variant.get("available", False)),
             "url": url,
             "region": region,
+            "grade": grade,
+            "cultivar": cultivar,
             "scraped_at": scraped_at,
         })
     return rows

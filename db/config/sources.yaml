@@ -52,7 +52,7 @@ stores:
     currency: USD
     products:
       - url: https://paragontearoom.com/products/ceremonial-matcha
-        region: null
+        region: SHIZUOKA, JAPAN
 
 # Checked but not added:
 # - Mizuba Tea Co., Breakaway Matcha, DoMatcha: verified Shopify stores, but their listed

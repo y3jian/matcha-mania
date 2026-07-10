@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Matcha Harvest Map</title>
+<title>Matcha Mania</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#3c6130">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -32,6 +32,7 @@
     --series-muted-fill: #ddd8c2;
     --status-good:    #0ca30c;
     --status-critical:#d03b3b;
+    --status-warning: #b5790a;
     --pin-ring:       #fdfcf6;
     --berry:          #c53d5f;
     --berry-strong:   #9e2e49;
@@ -111,7 +112,7 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  #prices, #regions, #calendar { scroll-margin-top: 64px; }
+  #prices, #pantry, #regions, #calendar { scroll-margin-top: 64px; }
 
   .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
   .reveal.is-visible { opacity: 1; transform: translateY(0); }
@@ -291,6 +292,7 @@
 
   /* track-a-new-matcha form */
   .track-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .track-form[hidden] { display: none; }
   .track-form input {
     font: inherit;
     font-size: 0.85rem;
@@ -319,8 +321,23 @@
   .track-status.error { color: var(--status-critical); }
   .track-status[hidden] { display: none; }
 
-  .fx-note { font-size: 0.75rem; color: var(--text-muted); margin: -6px 0 14px; }
-  .fx-note[hidden] { display: none; }
+  .section-actions { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .refresh-btn {
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+  }
+  .refresh-btn:hover { border-color: var(--brand); }
+  .refresh-btn:disabled { opacity: 0.6; cursor: default; }
+  .refresh-status { font-size: 0.8rem; color: var(--text-muted); }
+  .refresh-status.error { color: var(--status-critical); }
+  .refresh-status[hidden] { display: none; }
 
   /* per-card manage (edit/remove) controls */
   .manage-row { display: flex; gap: 12px; margin-top: 8px; }
@@ -384,15 +401,121 @@
   }
   .price-card .store { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; padding-right: 22px; }
   .price-card .name { font-weight: 600; margin: 2px 0 8px; font-size: 0.95rem; }
+  .price-card .name:has(+ .notes) { margin-bottom: 2px; }
+  .price-card .notes { color: var(--text-muted); font-size: 0.72rem; margin: 0 0 8px; }
   .price-card .price-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
   .price-card .price { font-size: 1.3rem; font-weight: 700; }
   .price-card .per-g { color: var(--text-muted); font-size: 0.72rem; }
   .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
   .badge.good { color: var(--status-good); background: color-mix(in srgb, var(--status-good) 15%, transparent); }
   .badge.critical { color: var(--status-critical); background: color-mix(in srgb, var(--status-critical) 15%, transparent); }
+  .badge.warning { color: var(--status-warning); background: color-mix(in srgb, var(--status-warning) 15%, transparent); }
+  .badge.neutral { color: var(--text-muted); background: color-mix(in srgb, var(--text-muted) 15%, transparent); }
   .price-card .meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+  .similar-matcha { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 0.75rem; }
+  .similar-matcha-label { color: var(--text-muted); margin-bottom: 4px; }
+  .similar-matcha-link { display: block; color: var(--brand); text-decoration: none; margin-bottom: 2px; }
+  .similar-matcha-link:hover { text-decoration: underline; }
   .price-card a { color: var(--brand); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
   .price-card a:hover { text-decoration: underline; }
+
+  /* pantry */
+  .pantry-add-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pantry-add-form[hidden] { display: none; }
+  .pantry-add-form input {
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  .pantry-add-form input[type="text"] { flex: 0 1 160px; }
+  .pantry-add-form input[type="number"] { flex: 0 1 110px; }
+  .pantry-add-form button {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(90deg, var(--brand), var(--berry));
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .pantry-add-form button:disabled { opacity: 0.6; cursor: default; }
+  .pantry-status { font-size: 0.82rem; margin: 0 0 14px; }
+  .pantry-status.ok { color: var(--brand); }
+  .pantry-status.error { color: var(--status-critical); }
+  .pantry-status[hidden] { display: none; }
+
+  .pantry-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .pantry-card { border: 1px solid var(--border); border-radius: 14px; padding: 14px; background: var(--page); }
+  .pantry-card .name { font-weight: 600; font-size: 0.95rem; }
+  .pantry-card .store { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; }
+  .pantry-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pantry-stats { font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+  .pantry-predict, .pantry-meta { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px; }
+  .pantry-usage-form { display: flex; gap: 6px; margin: 10px 0; }
+  .pantry-usage-form input {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    width: 90px;
+  }
+  .pantry-usage-form button {
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .pantry-usage-form button:disabled { opacity: 0.6; cursor: default; }
+
+  .pantry-photo-form { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; align-items: center; }
+  .pantry-photo-form input[type="text"] {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    flex: 1 1 100px;
+  }
+  .pantry-photo-form input[type="file"] { font-size: 0.75rem; max-width: 140px; }
+  .pantry-photo-form button {
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .pantry-photo-form button:disabled { opacity: 0.6; cursor: default; }
+
+  .photo-log-head { margin: 20px 0 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .photo-log-head h3 { font-family: "Space Grotesk", system-ui, sans-serif; font-size: 1.02rem; margin: 0 0 2px; font-weight: 600; }
+  .photo-log { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  .photo-card { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--page); }
+  .photo-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--surface-1); }
+  .photo-card .photo-meta { padding: 10px 12px; }
+  .photo-card .photo-item-name { font-weight: 600; font-size: 0.85rem; }
+  .photo-card .photo-caption { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; }
+  .photo-card .photo-date { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+  .photo-card .photo-remove { margin: 0 12px 10px; }
 
   /* map */
   .map-wrap { position: relative; }
@@ -500,6 +623,7 @@
       <a class="wordmark" href="#top">🍓🍵 Matcha Mania</a>
       <nav class="site-nav">
         <a href="#prices">Prices</a>
+        <a href="#pantry">Pantry</a>
         <a href="#regions">Regions &amp; map</a>
         <a href="#calendar">Harvest calendar</a>
       </nav>
@@ -524,10 +648,17 @@
         <h2>Current prices</h2>
         <p class="section-sub">Updated daily.</p>
       </div>
-      <form class="track-form" id="track-form">
+      <div class="section-actions">
+        <button type="button" class="refresh-btn" id="refresh-checks-btn">🔄 Refresh checks</button>
+        <span class="refresh-status" id="refresh-status" hidden></span>
+        <button type="button" class="refresh-btn" id="track-form-toggle">+ Track a new matcha</button>
+      </div>
+      <form class="track-form" id="track-form" hidden>
         <input type="url" id="track-url" placeholder="Paste a matcha product URL…" required>
         <input type="text" id="track-store" placeholder="Store name (optional)">
         <input type="text" id="track-region" placeholder="Region (optional)">
+        <input type="text" id="track-grade" placeholder="Grade (optional)">
+        <input type="text" id="track-cultivar" placeholder="Cultivar (optional)">
         <button type="submit">+ Track</button>
       </form>
       <p class="track-status" id="track-status" hidden></p>
@@ -548,15 +679,35 @@
           <input type="checkbox" id="price-watchlist-only">
           Watchlist only
         </label>
-        <label>Currency
-          <select id="price-currency">
-            <option value="original">Original</option>
-            <option value="CAD" selected>CAD</option>
-          </select>
-        </label>
       </div>
-      <p class="fx-note" id="fx-note" hidden></p>
       <div id="price-grid" class="price-grid"></div>
+    </section>
+
+    <section class="section reveal" id="pantry">
+      <div class="section-head">
+        <h2>Pantry</h2>
+        <p class="section-sub">Track what you own and log usage — flags what's going stale or about to run out.</p>
+      </div>
+      <div class="section-actions">
+        <button type="button" class="refresh-btn" id="pantry-form-toggle">+ Add to pantry</button>
+      </div>
+      <form class="pantry-add-form" id="pantry-add-form" hidden>
+        <input type="text" id="pantry-product-name" placeholder="Product name" required>
+        <input type="number" id="pantry-size-grams" placeholder="Size (g)" min="1" step="1" required>
+        <input type="text" id="pantry-store" placeholder="Store (optional)">
+        <input type="text" id="pantry-region" placeholder="Region (optional)">
+        <input type="text" id="pantry-grade" placeholder="Grade (optional)">
+        <input type="text" id="pantry-cultivar" placeholder="Cultivar (optional)">
+        <button type="submit">Add</button>
+      </form>
+      <p class="pantry-status" id="pantry-add-status" hidden></p>
+      <div id="pantry-list" class="pantry-list"></div>
+
+      <div class="photo-log-head">
+        <h3>Photo log</h3>
+        <p class="section-sub">Color is a real quality signal — vibrant green vs. dull or yellowish. A visual record over time, across every tin.</p>
+      </div>
+      <div id="photo-log" class="photo-log"></div>
     </section>
 
     <section class="section reveal" id="regions">
@@ -631,7 +782,10 @@
     if (!match) return value;
     return getComputedStyle(document.querySelector(".viz-root")).getPropertyValue(match[1]).trim() || value;
   }
-  function priceKey(row) { return row.store + "|" + row.product_name; }
+  // includes size_grams: product_name alone is no longer unique per store now that size/
+  // variant details live in variant_label instead of being appended to the title — two
+  // different tin sizes of the same product would otherwise collide onto one key.
+  function priceKey(row) { return row.store + "|" + row.product_name + "|" + row.size_grams; }
 
   // ---- tooltip ----
   const tooltip = document.getElementById("tooltip");
@@ -801,10 +955,10 @@
   // parse" — the latter usually means serve.py is running OLD code (it's a long-running
   // process; editing the .py file doesn't reload it) and needs a restart, which is a very
   // different fix than "you're not running serve.py at all".
-  async function callTrackingApi(method, payload) {
+  async function callTrackingApi(method, payload, path = "/api/track") {
     let res;
     try {
-      res = await fetch("/api/track", {
+      res = await fetch(path, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -822,6 +976,21 @@
     }
   }
 
+  // ---- collapsible "add" forms: keep content (prices, pantry) the first thing you see,
+  // not a wall of input fields — the form tucks behind a toggle button instead.
+  function wireFormToggle(toggleId, formId, focusFieldId) {
+    const toggleBtn = document.getElementById(toggleId);
+    const form = document.getElementById(formId);
+    const openLabel = toggleBtn.textContent;
+    toggleBtn.addEventListener("click", () => {
+      form.hidden = !form.hidden;
+      toggleBtn.textContent = form.hidden ? openLabel : "Cancel";
+      if (!form.hidden) document.getElementById(focusFieldId).focus();
+    });
+  }
+  wireFormToggle("track-form-toggle", "track-form", "track-url");
+  wireFormToggle("pantry-form-toggle", "pantry-add-form", "pantry-product-name");
+
   // ---- track a new matcha ----
   const trackForm = document.getElementById("track-form");
   const trackStatus = document.getElementById("track-status");
@@ -830,6 +999,8 @@
     const url = document.getElementById("track-url").value.trim();
     const store = document.getElementById("track-store").value.trim();
     const region = document.getElementById("track-region").value.trim();
+    const grade = document.getElementById("track-grade").value.trim();
+    const cultivar = document.getElementById("track-cultivar").value.trim();
     if (!url) return;
 
     const submitBtn = trackForm.querySelector("button[type=submit]");
@@ -837,7 +1008,7 @@
     trackStatus.hidden = true;
 
     try {
-      const body = await callTrackingApi("POST", { url, store: store || null, region: region || null });
+      const body = await callTrackingApi("POST", { url, store: store || null, region: region || null, grade: grade || null, cultivar: cultivar || null });
       trackStatus.textContent = body.ok ? body.message + " Reloading…" : body.error;
       trackStatus.className = "track-status " + (body.ok ? "ok" : "error");
       trackStatus.hidden = false;
@@ -854,6 +1025,360 @@
       submitBtn.disabled = false;
     }
   });
+
+  // ---- refresh checks: rescrape every already-tracked product ----
+  const refreshBtn = document.getElementById("refresh-checks-btn");
+  const refreshStatus = document.getElementById("refresh-status");
+  refreshBtn.addEventListener("click", async () => {
+    const originalLabel = refreshBtn.textContent;
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = "🔄 Refreshing…";
+    refreshStatus.hidden = true;
+    try {
+      const body = await callTrackingApi("POST", {}, "/api/refresh");
+      refreshStatus.textContent = body.ok ? body.message + " Reloading…" : body.error;
+      refreshStatus.className = "refresh-status" + (body.ok ? "" : " error");
+      refreshStatus.hidden = false;
+      if (body.ok) {
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = originalLabel;
+      }
+    } catch (err) {
+      refreshStatus.textContent = err.message;
+      refreshStatus.className = "refresh-status error";
+      refreshStatus.hidden = false;
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = originalLabel;
+    }
+  });
+
+  // ---- pantry: inventory + usage logging ----
+  function makeBadge(text, kind) {
+    const span = document.createElement("span");
+    span.className = "badge " + kind;
+    span.textContent = text;
+    return span;
+  }
+
+  function buildPantryCard(item) {
+    const card = document.createElement("div");
+    card.className = "pantry-card";
+
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = item.product_name;
+    card.appendChild(name);
+
+    const meta = [item.store, item.region].filter(Boolean).join(" · ");
+    if (meta) {
+      const store = document.createElement("div");
+      store.className = "store";
+      store.textContent = meta;
+      card.appendChild(store);
+    }
+
+    const badges = document.createElement("div");
+    badges.className = "pantry-badges";
+    if (item.is_finished) {
+      badges.appendChild(makeBadge("Finished", "neutral"));
+    } else if (!item.opened_date) {
+      badges.appendChild(makeBadge("Unopened", "neutral"));
+    } else {
+      if (item.is_stale) badges.appendChild(makeBadge("Stale", "critical"));
+      if (item.needs_reorder) badges.appendChild(makeBadge("Reorder soon", "warning"));
+      if (!item.is_stale && !item.needs_reorder) badges.appendChild(makeBadge("Fresh", "good"));
+    }
+    card.appendChild(badges);
+
+    const stats = document.createElement("div");
+    stats.className = "pantry-stats";
+    stats.textContent = `${item.remaining_grams}g of ${item.size_grams}g left`;
+    card.appendChild(stats);
+
+    if (item.days_until_empty != null) {
+      const predict = document.createElement("div");
+      predict.className = "pantry-predict";
+      predict.textContent = `~${item.daily_rate_grams}g/day — about ${item.days_until_empty} day${item.days_until_empty === 1 ? "" : "s"} left at this pace`;
+      card.appendChild(predict);
+    }
+
+    if (item.opened_date) {
+      const openedNote = document.createElement("div");
+      openedNote.className = "pantry-meta";
+      openedNote.textContent = `Opened ${item.opened_date}` + (item.days_since_opened != null ? ` (${item.days_since_opened}d ago)` : "");
+      card.appendChild(openedNote);
+    }
+
+    if (!item.is_finished) {
+      const usageForm = document.createElement("form");
+      usageForm.className = "pantry-usage-form";
+      const gramsInput = document.createElement("input");
+      gramsInput.type = "number";
+      gramsInput.step = "0.1";
+      gramsInput.min = "0.1";
+      gramsInput.placeholder = "grams used";
+      gramsInput.required = true;
+      const logBtn = document.createElement("button");
+      logBtn.type = "submit";
+      logBtn.textContent = "Log usage";
+      usageForm.append(gramsInput, logBtn);
+      usageForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const grams = parseFloat(gramsInput.value);
+        if (!grams || grams <= 0) return;
+        logBtn.disabled = true;
+        try {
+          const body = await callTrackingApi("POST", { id: item.id, grams_used: grams }, "/api/pantry/usage");
+          if (body.ok) location.reload();
+          else { alert(body.error); logBtn.disabled = false; }
+        } catch (err) {
+          alert(err.message);
+          logBtn.disabled = false;
+        }
+      });
+      card.appendChild(usageForm);
+    }
+
+    const photoForm = document.createElement("form");
+    photoForm.className = "pantry-photo-form";
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    const captionInput = document.createElement("input");
+    captionInput.type = "text";
+    captionInput.placeholder = "Caption (optional)";
+    const photoBtn = document.createElement("button");
+    photoBtn.type = "submit";
+    photoBtn.textContent = "📷 Add photo";
+    photoForm.append(fileInput, captionInput, photoBtn);
+    photoForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const file = fileInput.files[0];
+      if (!file) return;
+      photoBtn.disabled = true;
+      try {
+        const imageDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("Couldn't read that file."));
+          reader.readAsDataURL(file);
+        });
+        const body = await callTrackingApi("POST", {
+          pantry_item_id: item.id,
+          image_data_url: imageDataUrl,
+          caption: captionInput.value.trim() || null,
+        }, "/api/pantry/photos");
+        if (body.ok) location.reload();
+        else { alert(body.error); photoBtn.disabled = false; }
+      } catch (err) {
+        alert(err.message);
+        photoBtn.disabled = false;
+      }
+    });
+    card.appendChild(photoForm);
+
+    const manageRow = document.createElement("div");
+    manageRow.className = "manage-row";
+    if (!item.finished_date) {
+      const finishBtn = document.createElement("button");
+      finishBtn.type = "button";
+      finishBtn.className = "manage-link";
+      finishBtn.textContent = "Mark finished";
+      finishBtn.addEventListener("click", async () => {
+        finishBtn.disabled = true;
+        try {
+          const body = await callTrackingApi("PATCH", { id: item.id, finished_date: new Date().toISOString().slice(0, 10) }, "/api/pantry");
+          if (body.ok) location.reload();
+          else { alert(body.error); finishBtn.disabled = false; }
+        } catch (err) {
+          alert(err.message);
+          finishBtn.disabled = false;
+        }
+      });
+      manageRow.appendChild(finishBtn);
+    }
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "manage-link danger";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", async () => {
+      if (!confirm(`Remove "${item.product_name}" from your pantry? This also deletes its usage history.`)) return;
+      removeBtn.disabled = true;
+      try {
+        const body = await callTrackingApi("DELETE", { id: item.id }, "/api/pantry");
+        if (body.ok) location.reload();
+        else { alert(body.error); removeBtn.disabled = false; }
+      } catch (err) {
+        alert(err.message);
+        removeBtn.disabled = false;
+      }
+    });
+    manageRow.appendChild(removeBtn);
+    card.appendChild(manageRow);
+
+    return card;
+  }
+
+  async function loadPantry() {
+    const list = document.getElementById("pantry-list");
+    list.innerHTML = "";
+    let body;
+    try {
+      const res = await fetch("/api/pantry");
+      body = await res.json();
+    } catch {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Couldn't reach the pantry — this needs the site running via `python3 serve.py`, not a plain static file server.";
+      list.appendChild(empty);
+      return;
+    }
+    if (!body.ok) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = body.error;
+      list.appendChild(empty);
+      return;
+    }
+    if (!body.items.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Nothing in your pantry yet — add a tin above.";
+      list.appendChild(empty);
+      return;
+    }
+    // needs-attention items first (stale/reorder), then by remaining amount ascending
+    const priority = (i) => (i.is_finished ? 2 : (i.is_stale || i.needs_reorder) ? 0 : 1);
+    [...body.items]
+      .sort((a, b) => priority(a) - priority(b) || a.remaining_grams - b.remaining_grams)
+      .forEach(item => list.appendChild(buildPantryCard(item)));
+  }
+
+  const pantryAddForm = document.getElementById("pantry-add-form");
+  const pantryAddStatus = document.getElementById("pantry-add-status");
+  pantryAddForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const product_name = document.getElementById("pantry-product-name").value.trim();
+    const size_grams = document.getElementById("pantry-size-grams").value;
+    const store = document.getElementById("pantry-store").value.trim();
+    const region = document.getElementById("pantry-region").value.trim();
+    const grade = document.getElementById("pantry-grade").value.trim();
+    const cultivar = document.getElementById("pantry-cultivar").value.trim();
+    if (!product_name || !size_grams) return;
+
+    const submitBtn = pantryAddForm.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    pantryAddStatus.hidden = true;
+    try {
+      const body = await callTrackingApi("POST", {
+        product_name,
+        size_grams: Number(size_grams),
+        store: store || null,
+        region: region || null,
+        grade: grade || null,
+        cultivar: cultivar || null,
+      }, "/api/pantry");
+      pantryAddStatus.textContent = body.ok ? body.message : body.error;
+      pantryAddStatus.className = "pantry-status " + (body.ok ? "ok" : "error");
+      pantryAddStatus.hidden = false;
+      if (body.ok) {
+        pantryAddForm.reset();
+        loadPantry();
+      }
+    } catch (err) {
+      pantryAddStatus.textContent = err.message;
+      pantryAddStatus.className = "pantry-status error";
+      pantryAddStatus.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+  loadPantry();
+
+  // ---- photo log: a visual quality record across every pantry item (color is a real
+  // signal — vibrant green vs. dull/yellowish) ----
+  function buildPhotoCard(photo) {
+    const card = document.createElement("div");
+    card.className = "photo-card";
+
+    const img = document.createElement("img");
+    img.src = photo.url;
+    img.alt = photo.caption || photo.product_name;
+    img.loading = "lazy";
+    card.appendChild(img);
+
+    const meta = document.createElement("div");
+    meta.className = "photo-meta";
+    const itemName = document.createElement("div");
+    itemName.className = "photo-item-name";
+    itemName.textContent = photo.product_name;
+    meta.appendChild(itemName);
+    if (photo.caption) {
+      const caption = document.createElement("div");
+      caption.className = "photo-caption";
+      caption.textContent = photo.caption;
+      meta.appendChild(caption);
+    }
+    const takenAt = document.createElement("div");
+    takenAt.className = "photo-date";
+    takenAt.textContent = relativeTime(new Date(photo.taken_at));
+    meta.appendChild(takenAt);
+    card.appendChild(meta);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "manage-link danger photo-remove";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", async () => {
+      if (!confirm("Remove this photo?")) return;
+      removeBtn.disabled = true;
+      try {
+        const body = await callTrackingApi("DELETE", { id: photo.id }, "/api/pantry/photos");
+        if (body.ok) loadPhotoLog();
+        else { alert(body.error); removeBtn.disabled = false; }
+      } catch (err) {
+        alert(err.message);
+        removeBtn.disabled = false;
+      }
+    });
+    card.appendChild(removeBtn);
+
+    return card;
+  }
+
+  async function loadPhotoLog() {
+    const gallery = document.getElementById("photo-log");
+    gallery.innerHTML = "";
+    let body;
+    try {
+      const res = await fetch("/api/pantry/photos");
+      body = await res.json();
+    } catch {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Couldn't reach the photo log — this needs the site running via `python3 serve.py`, not a plain static file server.";
+      gallery.appendChild(empty);
+      return;
+    }
+    if (!body.ok) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = body.error;
+      gallery.appendChild(empty);
+      return;
+    }
+    if (!body.photos.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "No photos yet — add one from a pantry item above.";
+      gallery.appendChild(empty);
+      return;
+    }
+    body.photos.forEach(photo => gallery.appendChild(buildPhotoCard(photo)));
+  }
+  loadPhotoLog();
 
   // ---- current prices ----
   const priceGrid = document.getElementById("price-grid");
@@ -873,45 +1398,22 @@
     const allPriceRows = [...latestByKey.values()];
     const watchlist = loadWatchlist();
 
-    // ---- currency conversion (display only — row.currency/row.price stay the scraped source of truth) ----
-    let displayCurrency = "original";
-    let fxRates = {}; // e.g. { USD: 1.42 } meaning 1 USD = 1.42 units of displayCurrency
-
-    function convertedAmount(row) {
-      if (displayCurrency === "original" || row.currency === displayCurrency) {
-        return { amount: row.price, currency: row.currency };
-      }
-      const rate = fxRates[row.currency];
-      if (!rate) return { amount: row.price, currency: row.currency }; // no rate yet/available — show original rather than guess
-      return { amount: row.price * rate, currency: displayCurrency };
-    }
-
-    async function loadFxRates(toCurrency) {
-      const neededFrom = [...new Set(allPriceRows.map(r => r.currency))].filter(c => c !== toCurrency);
-      const cacheKey = "matcha-mania:fx-rates:" + toCurrency;
-      const maxAgeMs = 24 * 60 * 60 * 1000;
-      const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
-      if (cached && (Date.now() - cached.fetchedAt) < maxAgeMs && neededFrom.every(c => c in cached.rates)) {
-        return cached;
-      }
-
-      const rates = {};
-      let asOfDate = null;
-      await Promise.all(neededFrom.map(async (from) => {
-        try {
-          const res = await fetch(`https://api.frankfurter.app/latest?from=${encodeURIComponent(from)}&to=${encodeURIComponent(toCurrency)}`);
-          if (!res.ok) return;
-          const body = await res.json();
-          if (body.rates && body.rates[toCurrency]) {
-            rates[from] = body.rates[toCurrency];
-            asOfDate = body.date;
-          }
-        } catch { /* leave this currency unconverted; convertedAmount() falls back to original for it */ }
-      }));
-
-      const result = { rates, fetchedAt: Date.now(), date: asOfDate };
-      localStorage.setItem(cacheKey, JSON.stringify(result));
-      return result;
+    // "similar matcha" recommender: when a favorite is sold out, surface in-stock
+    // alternatives scored by how many of region/grade/cultivar match. Purely client-side —
+    // grade/cultivar/region are already in the exported price data, no extra API needed.
+    function findSimilarMatcha(row, limit = 3) {
+      const scored = allPriceRows
+        .filter(r => r.in_stock && priceKey(r) !== priceKey(row))
+        .map(r => {
+          let score = 0;
+          if (row.region && r.region === row.region) score++;
+          if (row.grade && r.grade === row.grade) score++;
+          if (row.cultivar && r.cultivar === row.cultivar) score++;
+          return { row: r, score };
+        })
+        .filter(s => s.score > 0)
+        .sort((a, b) => b.score - a.score || a.row.price - b.row.price);
+      return scored.slice(0, limit).map(s => s.row);
     }
 
     function buildPriceCard(row) {
@@ -946,15 +1448,21 @@
       name.textContent = row.product_name;
       card.appendChild(name);
 
+      if (row.variant_label) {
+        const notes = document.createElement("div");
+        notes.className = "notes";
+        notes.textContent = row.variant_label;
+        card.appendChild(notes);
+      }
+
       const priceRow = document.createElement("div");
       priceRow.className = "price-row";
-      const { amount, currency } = convertedAmount(row);
       const price = document.createElement("span");
       price.className = "price";
-      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
+      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency }).format(row.price);
       const perG = document.createElement("span");
       perG.className = "per-g";
-      if (row.size_grams) perG.textContent = (amount / row.size_grams).toFixed(2) + " " + currency + "/g";
+      if (row.size_grams) perG.textContent = (row.price / row.size_grams).toFixed(2) + " " + row.currency + "/g";
       priceRow.append(price, perG);
       card.appendChild(priceRow);
 
@@ -962,6 +1470,28 @@
       badge.className = "badge " + (row.in_stock ? "good" : "critical");
       badge.textContent = row.in_stock ? "In stock" : "Sold out";
       card.appendChild(badge);
+
+      if (!row.in_stock) {
+        const alternatives = findSimilarMatcha(row);
+        if (alternatives.length) {
+          const similar = document.createElement("div");
+          similar.className = "similar-matcha";
+          const label = document.createElement("div");
+          label.className = "similar-matcha-label";
+          label.textContent = "Similar, in stock:";
+          similar.appendChild(label);
+          alternatives.forEach(alt => {
+            const altLink = document.createElement("a");
+            altLink.className = "similar-matcha-link";
+            altLink.href = alt.url;
+            altLink.target = "_blank";
+            altLink.rel = "noopener noreferrer";
+            altLink.textContent = `${alt.store} — ${alt.product_name}`;
+            similar.appendChild(altLink);
+          });
+          card.appendChild(similar);
+        }
+      }
 
       const meta = document.createElement("div");
       meta.className = "meta";
@@ -1022,6 +1552,16 @@
       currencyInput.placeholder = "Currency code";
       currencyInput.value = row.currency;
 
+      const gradeInput = document.createElement("input");
+      gradeInput.type = "text";
+      gradeInput.placeholder = "Grade (blank to clear)";
+      gradeInput.value = row.grade || "";
+
+      const cultivarInput = document.createElement("input");
+      cultivarInput.type = "text";
+      cultivarInput.placeholder = "Cultivar (blank to clear)";
+      cultivarInput.value = row.cultivar || "";
+
       const actions = document.createElement("div");
       actions.className = "edit-panel-actions";
       const saveBtn = document.createElement("button");
@@ -1038,7 +1578,7 @@
       status.className = "edit-status";
       status.hidden = true;
 
-      panel.append(storeInput, regionInput, currencyInput, actions, status);
+      panel.append(storeInput, regionInput, currencyInput, gradeInput, cultivarInput, actions, status);
       wrap.appendChild(panel);
 
       editBtn.addEventListener("click", () => { panel.hidden = !panel.hidden; });
@@ -1053,6 +1593,8 @@
             store: storeInput.value.trim() || null,
             region: regionInput.value.trim() || null,
             currency: currencyInput.value.trim() || null,
+            grade: gradeInput.value.trim() || null,
+            cultivar: cultivarInput.value.trim() || null,
           });
           status.textContent = body.ok ? body.message + " Reloading…" : body.error;
           status.className = "edit-status " + (body.ok ? "ok" : "error");
@@ -1090,8 +1632,6 @@
     const sortSelect = document.getElementById("price-sort");
     const regionSelect = document.getElementById("price-region");
     const watchlistOnlyCheckbox = document.getElementById("price-watchlist-only");
-    const currencySelect = document.getElementById("price-currency");
-    const fxNote = document.getElementById("fx-note");
     [...new Set(allPriceRows.map(r => r.region || "Unspecified"))].sort().forEach(region => {
       const opt = document.createElement("option");
       opt.value = region;
@@ -1121,39 +1661,7 @@
     sortSelect.addEventListener("change", renderPriceGrid);
     regionSelect.addEventListener("change", renderPriceGrid);
     watchlistOnlyCheckbox.addEventListener("change", renderPriceGrid);
-    renderPriceGrid(); // instant, in each product's original currency
-
-    currencySelect.addEventListener("change", async () => {
-      const target = currencySelect.value;
-      if (target === "original") {
-        displayCurrency = "original";
-        fxNote.hidden = true;
-        renderPriceGrid();
-        return;
-      }
-      currencySelect.disabled = true;
-      const { rates, date } = await loadFxRates(target);
-      currencySelect.disabled = false;
-
-      const stillNeeded = [...new Set(allPriceRows.map(r => r.currency))].filter(c => c !== target);
-      if (stillNeeded.length && !stillNeeded.some(c => c in rates)) {
-        // couldn't fetch a single rate — likely offline; fall back rather than show a dead conversion
-        fxNote.textContent = "Couldn't reach the exchange-rate service — showing original currency.";
-        fxNote.hidden = false;
-        currencySelect.value = "original";
-        displayCurrency = "original";
-      } else {
-        displayCurrency = target;
-        fxRates = rates;
-        fxNote.textContent = date
-          ? `Prices converted to ${target} at rates as of ${date} (approximate).`
-          : `Prices converted to ${target} (approximate).`;
-        fxNote.hidden = false;
-      }
-      renderPriceGrid();
-    });
-    // default to CAD, as requested — converts in the background once the instant original-currency render is up
-    currencySelect.dispatchEvent(new Event("change"));
+    renderPriceGrid();
 
     // ---- what changed since last visit: watched price drops/restocks + upcoming harvest windows ----
     const lastSeen = loadLastSeenPrices();
