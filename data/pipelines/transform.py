@@ -5,7 +5,7 @@ from typing import Optional
 SIZE_PATTERN = re.compile(r"(\d+(?:\.\d+)?)\s*g\b", re.IGNORECASE)
 
 
-def _size_grams(*texts: str) -> Optional[int]:
+def parse_size_grams(*texts: str) -> Optional[int]:
     for text in texts:
         if not text:
             continue
@@ -20,7 +20,7 @@ def transform_product(raw_product: dict, store: str, currency: str, url: str, re
     scraped_at = datetime.now(timezone.utc).isoformat()
     rows = []
     for variant in raw_product["variants"]:
-        size_grams = _size_grams(variant.get("title", ""), raw_product.get("title", ""))
+        size_grams = parse_size_grams(variant.get("title", ""), raw_product.get("title", ""))
         if size_grams is None:
             print(f"skipping variant with no parseable size: {raw_product.get('title')} / {variant.get('title')}")
             continue

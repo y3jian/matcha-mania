@@ -1,5 +1,27 @@
 window.MATCHA_PRICES = [
   {
+    "store": "Paragon Tea Room",
+    "product_name": "Ceremonial Matcha (30g)",
+    "size_grams": 30,
+    "price": 35.0,
+    "currency": "USD",
+    "in_stock": 1,
+    "url": "https://paragontearoom.com/products/ceremonial-matcha",
+    "region": null,
+    "scraped_at": "2026-07-10T05:11:19.517407+00:00"
+  },
+  {
+    "store": "Paragon Tea Room",
+    "product_name": "Ceremonial Matcha (100g)",
+    "size_grams": 100,
+    "price": 98.0,
+    "currency": "USD",
+    "in_stock": 1,
+    "url": "https://paragontearoom.com/products/ceremonial-matcha",
+    "region": null,
+    "scraped_at": "2026-07-10T05:11:19.517407+00:00"
+  },
+  {
     "store": "Jade Leaf Matcha",
     "product_name": "Organic Ceremonial Matcha - Barista Edition (30g Tin (15-30 Servings))",
     "size_grams": 30,

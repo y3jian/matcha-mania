@@ -48,6 +48,12 @@ stores:
         # Region not stated on this SKU.
         region: null
 
+  - name: Paragon Tea Room
+    currency: USD
+    products:
+      - url: https://paragontearoom.com/products/ceremonial-matcha
+        region: null
+
 # Checked but not added:
 # - Mizuba Tea Co., Breakaway Matcha, DoMatcha: verified Shopify stores, but their listed
 #   products carry no gram/weight figure in the title (sold by "servings" or an untitled

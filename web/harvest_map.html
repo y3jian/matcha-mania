@@ -4,7 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Matcha Harvest Map</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3c6130">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Matcha Mania">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   .viz-root {
     --surface-1:      #fdfcf6;
@@ -16,8 +25,6 @@
     --baseline:       #cfc9ae;
     --border:         rgba(28,33,23,0.10);
     --brand:          #3c6130;
-    --brand-strong:   #2c481f;
-    --brand-soft:     #e8f0e0;
     --series-japan:   #4c7a3d;
     --series-china:   #e0672c;
     --series-korea:   #6b4a8a;
@@ -26,6 +33,11 @@
     --status-good:    #0ca30c;
     --status-critical:#d03b3b;
     --pin-ring:       #fdfcf6;
+    --berry:          #c53d5f;
+    --berry-strong:   #9e2e49;
+    --berry-soft:     #fbe4e9;
+    --hero-wash:       radial-gradient(900px circle at 12% -10%, color-mix(in srgb, var(--berry) 14%, transparent), transparent 60%),
+                       radial-gradient(900px circle at 88% 5%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 55%);
   }
   @media (prefers-color-scheme: dark) {
     .viz-root {
@@ -38,14 +50,17 @@
       --baseline:       #3b4030;
       --border:         rgba(255,255,255,0.10);
       --brand:          #6fae57;
-      --brand-strong:   #8bc46e;
-      --brand-soft:     rgba(111,174,87,0.14);
       --series-japan:   #4f9a3a;
       --series-china:   #c2621f;
       --series-korea:   #9573c0;
       --series-muted:   #55584a;
       --series-muted-fill: #313528;
       --pin-ring:       #1b1f16;
+      --berry:          #ff8fab;
+      --berry-strong:   #ffb3c6;
+      --berry-soft:     rgba(255,143,171,0.16);
+      --hero-wash:       radial-gradient(900px circle at 12% -10%, color-mix(in srgb, var(--berry) 16%, transparent), transparent 60%),
+                         radial-gradient(900px circle at 88% 5%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 55%);
     }
   }
   :root[data-theme="dark"] .viz-root {
@@ -58,14 +73,17 @@
     --baseline:       #3b4030;
     --border:         rgba(255,255,255,0.10);
     --brand:          #6fae57;
-    --brand-strong:   #8bc46e;
-    --brand-soft:     rgba(111,174,87,0.14);
     --series-japan:   #4f9a3a;
     --series-china:   #c2621f;
     --series-korea:   #9573c0;
     --series-muted:   #55584a;
     --series-muted-fill: #313528;
     --pin-ring:       #1b1f16;
+    --berry:          #ff8fab;
+    --berry-strong:   #ffb3c6;
+    --berry-soft:     rgba(255,143,171,0.16);
+    --hero-wash:       radial-gradient(900px circle at 12% -10%, color-mix(in srgb, var(--berry) 16%, transparent), transparent 60%),
+                       radial-gradient(900px circle at 88% 5%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 55%);
   }
   :root[data-theme="light"] .viz-root {
     --surface-1:      #fdfcf6;
@@ -77,19 +95,21 @@
     --baseline:       #cfc9ae;
     --border:         rgba(28,33,23,0.10);
     --brand:          #3c6130;
-    --brand-strong:   #2c481f;
-    --brand-soft:     #e8f0e0;
     --series-japan:   #4c7a3d;
     --series-china:   #e0672c;
     --series-korea:   #6b4a8a;
     --series-muted:   #b7b39e;
     --series-muted-fill: #ddd8c2;
     --pin-ring:       #fdfcf6;
+    --berry:          #c53d5f;
+    --berry-strong:   #9e2e49;
+    --berry-soft:     #fbe4e9;
+    --hero-wash:       radial-gradient(900px circle at 12% -10%, color-mix(in srgb, var(--berry) 14%, transparent), transparent 60%),
+                       radial-gradient(900px circle at 88% 5%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 55%);
   }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body { background: var(--surface-1); }
   html { scroll-behavior: smooth; }
   #prices, #regions, #calendar { scroll-margin-top: 64px; }
 
@@ -103,14 +123,22 @@
   .viz-root {
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     color: var(--text-primary);
+    background: var(--hero-wash), var(--surface-1);
+    min-height: 100vh;
   }
 
   .site-header {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--surface-1);
+    background-color: color-mix(in srgb, var(--surface-1) 78%, transparent);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
     border-bottom: 1px solid var(--border);
+    background-image: linear-gradient(90deg, var(--berry), var(--brand));
+    background-repeat: no-repeat;
+    background-size: 100% 2px;
+    background-position: bottom;
   }
   .site-header-inner {
     max-width: 1100px;
@@ -121,31 +149,112 @@
     justify-content: space-between;
     gap: 20px;
   }
-  .wordmark { font-weight: 700; font-size: 1rem; color: var(--text-primary); text-decoration: none; }
+  .wordmark {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
   .site-nav { display: flex; gap: 20px; flex-wrap: wrap; }
-  .site-nav a { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; }
-  .site-nav a:hover { color: var(--brand); }
+  .site-nav a {
+    position: relative;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding-bottom: 2px;
+  }
+  .site-nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: -2px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--brand), var(--berry));
+    transition: right 0.2s ease;
+  }
+  .site-nav a:hover { color: var(--text-primary); }
+  .site-nav a:hover::after { right: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .site-nav a::after { transition: none; }
+  }
+
+  .notif-toggle {
+    font-size: 1rem;
+    line-height: 1;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 9px;
+    cursor: pointer;
+    color: var(--text-primary);
+  }
+  .notif-toggle:hover { border-color: var(--brand); }
+  .notif-toggle.is-on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+
+  .alert-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--berry-soft);
+    border: 1px solid color-mix(in srgb, var(--berry) 40%, transparent);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 20px 0 0;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+  }
+  .alert-banner[hidden] { display: none; }
+  .alert-banner #alert-banner-text { margin: 0; }
+  .alert-banner button {
+    font: inherit;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    flex: none;
+  }
+  .alert-banner button:hover { color: var(--text-primary); }
 
   .site-main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
 
   .page-intro { padding: 32px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
-  .page-intro h1 { font-size: 1.6rem; margin: 0 0 8px; }
+  .page-intro h1 {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+    background: linear-gradient(90deg, var(--brand) 0%, var(--berry) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
   .page-intro .lede { margin: 0 0 16px; color: var(--text-secondary); font-size: 0.98rem; max-width: 640px; }
 
   .note-inline {
-    border-left: 3px solid var(--brand);
-    padding: 4px 0 4px 14px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    background: var(--berry-soft);
+    border-radius: 12px;
+    padding: 8px 16px;
     margin: 0 0 8px;
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    max-width: 720px;
+    font-size: 0.85rem;
+    max-width: 100%;
   }
-  .note-inline strong { color: var(--text-primary); }
+  .note-inline strong { color: var(--berry-strong); }
 
   .section { padding: 28px 0; border-bottom: 1px solid var(--border); }
   .section:last-of-type { border-bottom: none; }
   .section-head { margin-bottom: 14px; }
-  .section-head h2 { font-size: 1.1rem; margin: 0 0 2px; font-weight: 600; }
+  .section-head h2 { font-family: "Space Grotesk", system-ui, sans-serif; font-size: 1.15rem; margin: 0 0 2px; font-weight: 600; }
   .section-head .section-sub { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
 
   .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; font-size: 0.82rem; color: var(--text-secondary); }
@@ -156,14 +265,14 @@
     font: inherit;
     background: none;
     border: 1px solid transparent;
-    border-radius: 999px;
+    border-radius: 8px;
     padding: 2px 8px;
     margin: -2px 0;
     cursor: pointer;
     color: inherit;
   }
   button.legend-item:hover { border-color: var(--border); }
-  button.legend-item.is-active { background: var(--brand-soft); color: var(--text-primary); font-weight: 600; }
+  button.legend-item.is-active { background: var(--berry-soft); color: var(--berry-strong); font-weight: 600; }
 
   .empty-state { color: var(--text-muted); font-size: 0.88rem; padding: 18px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
 
@@ -177,23 +286,103 @@
     background: var(--surface-1);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 4px 8px;
+    padding: 4px 12px;
   }
+
+  /* track-a-new-matcha form */
+  .track-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .track-form input {
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  .track-form input[type="url"] { flex: 1 1 260px; }
+  .track-form input[type="text"] { flex: 0 1 160px; }
+  .track-form button {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(90deg, var(--brand), var(--berry));
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .track-form button:disabled { opacity: 0.6; cursor: default; }
+  .track-status { font-size: 0.82rem; margin: 0 0 14px; }
+  .track-status.ok { color: var(--brand); }
+  .track-status.error { color: var(--status-critical); }
+  .track-status[hidden] { display: none; }
+
+  .fx-note { font-size: 0.75rem; color: var(--text-muted); margin: -6px 0 14px; }
+  .fx-note[hidden] { display: none; }
+
+  /* per-card manage (edit/remove) controls */
+  .manage-row { display: flex; gap: 12px; margin-top: 8px; }
+  .manage-link { font: inherit; font-size: 0.75rem; background: none; border: none; color: var(--text-muted); text-decoration: underline; cursor: pointer; padding: 0; }
+  .manage-link:hover { color: var(--text-primary); }
+  .manage-link.danger:hover { color: var(--status-critical); }
+  .manage-link:disabled { opacity: 0.6; cursor: default; }
+
+  .edit-panel { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .edit-panel[hidden] { display: none; }
+  .edit-panel input {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    width: 100%;
+  }
+  .edit-panel-actions { display: flex; gap: 8px; }
+  .edit-panel-actions button { font: inherit; font-size: 0.78rem; font-weight: 600; border-radius: 6px; padding: 4px 12px; cursor: pointer; }
+  .edit-panel-actions button:disabled { opacity: 0.6; cursor: default; }
+  .edit-save { color: #fff; background: var(--brand); border: none; }
+  .edit-cancel { color: var(--text-secondary); background: var(--surface-1); border: 1px solid var(--border); }
+  .edit-status { font-size: 0.75rem; margin: 2px 0 0; }
+  .edit-status.ok { color: var(--brand); }
+  .edit-status.error { color: var(--status-critical); }
+  .edit-status[hidden] { display: none; }
 
   /* price cards */
   .price-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
   .price-card {
+    position: relative;
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 14px;
     background: var(--page);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
-  .price-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+  .watch-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1rem;
+    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 2px;
+  }
+  .watch-toggle.is-watched { color: var(--berry); }
+  .price-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--berry);
+    box-shadow: 0 10px 28px color-mix(in srgb, var(--berry) 22%, transparent), 0 2px 8px rgba(0,0,0,0.06);
+  }
   @media (prefers-reduced-motion: reduce) {
     .price-card:hover { transform: none; }
   }
-  .price-card .store { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; }
+  .price-card .store { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; padding-right: 22px; }
   .price-card .name { font-weight: 600; margin: 2px 0 8px; font-size: 0.95rem; }
   .price-card .price-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
   .price-card .price { font-size: 1.3rem; font-weight: 700; }
@@ -240,7 +429,7 @@
   /* wrapper carries a >=24px hit target; the visible bar inside it stays a thin 3-5px strip */
   .tl-buy-window-hit { position: absolute; top: 20px; height: 20px; display: flex; align-items: center; cursor: pointer; }
   .tl-buy-window-hit:focus { outline: 2px solid var(--text-primary); outline-offset: 1px; }
-  .tl-buy-window { width: 100%; height: 3px; border-radius: 2px; background: var(--brand); }
+  .tl-buy-window { width: 100%; height: 3px; border-radius: 2px; background: var(--berry); }
   .tl-buy-window-hit:hover .tl-buy-window, .tl-buy-window-hit:focus .tl-buy-window { height: 5px; }
   @media (prefers-reduced-motion: reduce) {
     .tl-bar { transition: none; }
@@ -249,7 +438,7 @@
   /* line + label stay within the grid's own box (top >= 0) since .timeline's overflow-x:auto
      implicitly turns overflow-y visible into auto too, which would clip anything positioned
      above the grid's top edge */
-  .tl-today-line { position: absolute; top: 26px; bottom: 0; width: 2px; background: var(--brand); pointer-events: none; z-index: 1; }
+  .tl-today-line { position: absolute; top: 26px; bottom: 0; width: 2px; background: var(--berry); pointer-events: none; z-index: 1; }
   .tl-today-line::before {
     content: "Today";
     position: absolute;
@@ -259,7 +448,7 @@
     font-size: 0.6rem;
     font-weight: 700;
     color: #fff;
-    background: var(--brand);
+    background: var(--berry-strong);
     padding: 1px 5px;
     border-radius: 4px;
     white-space: nowrap;
@@ -308,27 +497,40 @@
 <div class="viz-root">
   <header class="site-header">
     <div class="site-header-inner">
-      <a class="wordmark" href="#top">🍵 Matcha Mania</a>
+      <a class="wordmark" href="#top">🍓🍵 Matcha Mania</a>
       <nav class="site-nav">
         <a href="#prices">Prices</a>
         <a href="#regions">Regions &amp; map</a>
         <a href="#calendar">Harvest calendar</a>
       </nav>
+      <button class="notif-toggle" id="notif-toggle" type="button" hidden></button>
     </div>
   </header>
 
   <main class="site-main" id="top">
+    <div class="alert-banner" id="alert-banner" hidden>
+      <p id="alert-banner-text"></p>
+      <button type="button" id="alert-banner-dismiss" aria-label="Dismiss">✕</button>
+    </div>
+
     <div class="page-intro reveal">
       <h1>Matcha Harvest Map</h1>
-      <p class="lede">When and where ceremonial-grade matcha is picked — plus what it costs right now.</p>
-      <p class="note-inline"><strong>Early Apr &rarr; late May:</strong> Ichibancha (first flush) — the only flush most producers shade and grind into ceremonial matcha — moves north across Japan from Kagoshima to Saitama. Everything later in the year is lower-grade or not matcha at all.</p>
+      <p class="lede">Where it grows, when it's picked, what it costs.</p>
+      <p class="note-inline" title="Ichibancha is the only flush most producers shade and grind into ceremonial matcha; everything later is lower-grade or not matcha at all.">🍓 <strong>Peak season: early Apr &ndash; late May</strong>, moving north across Japan</p>
     </div>
 
     <section class="section reveal" id="prices">
       <div class="section-head">
         <h2>Current prices</h2>
-        <p class="section-sub">Latest scrape per tracked product. Refreshed daily by the pipeline.</p>
+        <p class="section-sub">Updated daily.</p>
       </div>
+      <form class="track-form" id="track-form">
+        <input type="url" id="track-url" placeholder="Paste a matcha product URL…" required>
+        <input type="text" id="track-store" placeholder="Store name (optional)">
+        <input type="text" id="track-region" placeholder="Region (optional)">
+        <button type="submit">+ Track</button>
+      </form>
+      <p class="track-status" id="track-status" hidden></p>
       <div class="filter-row" id="price-filters" hidden>
         <label>Sort
           <select id="price-sort">
@@ -342,38 +544,48 @@
             <option value="all">All regions</option>
           </select>
         </label>
+        <label>
+          <input type="checkbox" id="price-watchlist-only">
+          Watchlist only
+        </label>
+        <label>Currency
+          <select id="price-currency">
+            <option value="original">Original</option>
+            <option value="CAD" selected>CAD</option>
+          </select>
+        </label>
       </div>
+      <p class="fx-note" id="fx-note" hidden></p>
       <div id="price-grid" class="price-grid"></div>
     </section>
 
     <section class="section reveal" id="regions">
       <div class="section-head">
         <h2>Where it's grown</h2>
-        <p class="section-sub">Round pins are harvest regions; leaf pins are stores we're tracking. Click either for details.</p>
+        <p class="section-sub">Click a pin for details.</p>
       </div>
       <div class="legend" id="map-legend"></div>
       <div class="map-wrap">
-        <div id="map" role="img" aria-label="Map of matcha and tea growing regions in China, South Korea, and Japan, with markers for tracked stores"></div>
+        <div id="map" role="img" aria-label="Map of matcha and tea growing regions in China, South Korea, and Japan, with markers for tracked stores" title="Pins mark representative city/county centers, not surveyed farm boundaries."></div>
         <div class="tooltip" id="tooltip"></div>
       </div>
-      <p class="map-note">Pins mark representative city/county centers for each growing region, not surveyed farm boundaries.</p>
     </section>
 
     <section class="section reveal" id="calendar">
       <div class="section-head">
         <h2>Harvest calendar</h2>
-        <p class="section-sub">Bars in color are graded into matcha; gray bars are the same plants' later pickings, sold as bancha/hojicha or bulk leaf instead. The underline marks a rule-based "good time to buy" window — see note below. Click a legend item to isolate a region.</p>
+        <p class="section-sub">Color = graded into matcha. Click legend to filter.</p>
       </div>
       <div class="legend" id="tl-legend"></div>
       <div class="timeline">
         <div class="tl-grid" id="tl-grid"></div>
       </div>
-      <p class="map-note">"Good time to buy" is a rule derived from the sourced harvest calendar (fresh-crop window + autumn kuradashi release where documented) — not a model fit on price history. No public source publishes month-by-month retail matcha prices, and our own price tracker doesn't have enough history yet to fit one.</p>
+      <p class="map-note" title="Derived from harvest + kuradashi release timing, not a model fit on price history.">Buy windows follow harvest timing, not price history.</p>
     </section>
 
     <section class="section reveal">
       <details class="table-toggle">
-        <summary>View full harvest data table</summary>
+        <summary>Full data table</summary>
         <div style="overflow-x:auto">
           <table class="data-table" id="data-table"></table>
         </div>
@@ -383,7 +595,7 @@
 
   <footer class="site-footer">
     <div class="site-footer-inner">
-      <div class="site-name">Matcha Mania — matcha harvest calendar and price tracker</div>
+      <div class="site-name">🍓🍵 Matcha Mania</div>
       <div class="footer-sources">
         <strong style="color:var(--text-secondary)">Sources</strong>
         <ul id="source-list"></ul>
@@ -419,6 +631,7 @@
     if (!match) return value;
     return getComputedStyle(document.querySelector(".viz-root")).getPropertyValue(match[1]).trim() || value;
   }
+  function priceKey(row) { return row.store + "|" + row.product_name; }
 
   // ---- tooltip ----
   const tooltip = document.getElementById("tooltip");
@@ -498,7 +711,7 @@
     { label: "Japan", color: "var(--series-japan)", group: "Japan" },
     { label: "China", color: "var(--series-china)", group: "China" },
     { label: "South Korea", color: "var(--series-korea)", group: "South Korea" },
-    { label: "Not used for matcha", color: "var(--series-muted)", group: "muted" },
+    { label: "Not matcha", color: "var(--series-muted)", group: "muted" },
   ];
   let timelineFilter = null;
   function setTimelineFilter(group) {
@@ -510,8 +723,137 @@
       btn.classList.toggle("is-active", btn.dataset.group === timelineFilter);
     });
   }
-  buildLegend(document.getElementById("tl-legend"), [...legendItems, { label: "🛒 Good time to buy", color: "var(--brand)", square: true }], { interactive: true, onToggle: setTimelineFilter });
+  buildLegend(document.getElementById("tl-legend"), [...legendItems, { label: "🛒 Good time to buy", color: "var(--berry)", square: true }], { interactive: true, onToggle: setTimelineFilter });
   buildLegend(document.getElementById("map-legend"), [...legendItems, { label: "Tracked store", color: "var(--brand)", square: true }]);
+
+  // ---- watchlist (localStorage-backed; no server, this is a personal-use static site) ----
+  const WATCHLIST_KEY = "matcha-mania:watchlist";
+  const LAST_SEEN_KEY = "matcha-mania:last-seen-prices";
+
+  function loadWatchlist() {
+    try { return new Set(JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || []); }
+    catch { return new Set(); }
+  }
+  function saveWatchlist(set) { localStorage.setItem(WATCHLIST_KEY, JSON.stringify([...set])); }
+
+  function loadLastSeenPrices() {
+    try { return JSON.parse(localStorage.getItem(LAST_SEEN_KEY)) || {}; }
+    catch { return {}; }
+  }
+  function saveLastSeenPrices(rows) {
+    const snapshot = {};
+    rows.forEach(row => { snapshot[priceKey(row)] = { price: row.price, in_stock: row.in_stock }; });
+    localStorage.setItem(LAST_SEEN_KEY, JSON.stringify(snapshot));
+  }
+
+  // ---- notification permission toggle ----
+  const notifToggle = document.getElementById("notif-toggle");
+  function refreshNotifToggle() {
+    if (!("Notification" in window)) return;
+    notifToggle.hidden = false;
+    const granted = Notification.permission === "granted";
+    notifToggle.textContent = granted ? "🔔 Alerts on" : "🔕 Get alerts";
+    notifToggle.classList.toggle("is-on", granted);
+    notifToggle.title = granted
+      ? "You'll get a notification here when a watchlist price drops or restocks"
+      : "Turn on notifications for watchlist price drops and restocks";
+    notifToggle.disabled = Notification.permission === "denied";
+  }
+  if ("Notification" in window) {
+    notifToggle.addEventListener("click", async () => {
+      if (Notification.permission === "default") await Notification.requestPermission();
+      refreshNotifToggle();
+    });
+    refreshNotifToggle();
+  }
+
+  function notify(title, body) {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body, icon: "icons/icon-192.png" });
+    }
+  }
+
+  // ---- alert banner (what changed since your last visit) ----
+  const alertBanner = document.getElementById("alert-banner");
+  const alertBannerText = document.getElementById("alert-banner-text");
+  document.getElementById("alert-banner-dismiss").addEventListener("click", () => { alertBanner.hidden = true; });
+  function showAlertBanner(lines) {
+    if (!lines.length) return;
+    alertBannerText.textContent = lines.join(" · ");
+    alertBanner.hidden = false;
+  }
+
+  // real, data-derived reason to come back: a tracked region's harvest window opening soon
+  function daysUntilMonthStart(month) {
+    let target = new Date(now.getFullYear(), month - 1, 1);
+    if (target < now) target = new Date(now.getFullYear() + 1, month - 1, 1);
+    return Math.ceil((target - now) / 86400000);
+  }
+  function upcomingHarvests(harvest, withinDays) {
+    return harvest
+      .filter(row => row.used_for_matcha)
+      .map(row => ({ row, days: daysUntilMonthStart(row.start_month) }))
+      .filter(({ days }) => days > 0 && days <= withinDays);
+  }
+
+  // ---- tracking API helper (posts to serve.py's /api/track; a plain static file server
+  // can't do this). Distinguishes "never got a response" from "got a response we can't
+  // parse" — the latter usually means serve.py is running OLD code (it's a long-running
+  // process; editing the .py file doesn't reload it) and needs a restart, which is a very
+  // different fix than "you're not running serve.py at all".
+  async function callTrackingApi(method, payload) {
+    let res;
+    try {
+      res = await fetch("/api/track", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      throw new Error("Couldn't reach the tracking server. Make sure the site is running via `python3 serve.py`, not a plain static file server.");
+    }
+    try {
+      return await res.json();
+    } catch {
+      throw new Error(
+        `The tracking server responded but not in the expected format (HTTP ${res.status}). ` +
+        "If you recently updated the code, stop and restart `python3 serve.py` to pick up the change — it doesn't reload automatically."
+      );
+    }
+  }
+
+  // ---- track a new matcha ----
+  const trackForm = document.getElementById("track-form");
+  const trackStatus = document.getElementById("track-status");
+  trackForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const url = document.getElementById("track-url").value.trim();
+    const store = document.getElementById("track-store").value.trim();
+    const region = document.getElementById("track-region").value.trim();
+    if (!url) return;
+
+    const submitBtn = trackForm.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    trackStatus.hidden = true;
+
+    try {
+      const body = await callTrackingApi("POST", { url, store: store || null, region: region || null });
+      trackStatus.textContent = body.ok ? body.message + " Reloading…" : body.error;
+      trackStatus.className = "track-status " + (body.ok ? "ok" : "error");
+      trackStatus.hidden = false;
+      if (body.ok) {
+        trackForm.reset();
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      trackStatus.textContent = err.message;
+      trackStatus.className = "track-status error";
+      trackStatus.hidden = false;
+      submitBtn.disabled = false;
+    }
+  });
 
   // ---- current prices ----
   const priceGrid = document.getElementById("price-grid");
@@ -524,15 +866,75 @@
     // most recent row per store+product
     const latestByKey = new Map();
     PRICES.forEach(row => {
-      const key = row.store + "|" + row.product_name;
+      const key = priceKey(row);
       const existing = latestByKey.get(key);
       if (!existing || row.scraped_at > existing.scraped_at) latestByKey.set(key, row);
     });
     const allPriceRows = [...latestByKey.values()];
+    const watchlist = loadWatchlist();
+
+    // ---- currency conversion (display only — row.currency/row.price stay the scraped source of truth) ----
+    let displayCurrency = "original";
+    let fxRates = {}; // e.g. { USD: 1.42 } meaning 1 USD = 1.42 units of displayCurrency
+
+    function convertedAmount(row) {
+      if (displayCurrency === "original" || row.currency === displayCurrency) {
+        return { amount: row.price, currency: row.currency };
+      }
+      const rate = fxRates[row.currency];
+      if (!rate) return { amount: row.price, currency: row.currency }; // no rate yet/available — show original rather than guess
+      return { amount: row.price * rate, currency: displayCurrency };
+    }
+
+    async function loadFxRates(toCurrency) {
+      const neededFrom = [...new Set(allPriceRows.map(r => r.currency))].filter(c => c !== toCurrency);
+      const cacheKey = "matcha-mania:fx-rates:" + toCurrency;
+      const maxAgeMs = 24 * 60 * 60 * 1000;
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
+      if (cached && (Date.now() - cached.fetchedAt) < maxAgeMs && neededFrom.every(c => c in cached.rates)) {
+        return cached;
+      }
+
+      const rates = {};
+      let asOfDate = null;
+      await Promise.all(neededFrom.map(async (from) => {
+        try {
+          const res = await fetch(`https://api.frankfurter.app/latest?from=${encodeURIComponent(from)}&to=${encodeURIComponent(toCurrency)}`);
+          if (!res.ok) return;
+          const body = await res.json();
+          if (body.rates && body.rates[toCurrency]) {
+            rates[from] = body.rates[toCurrency];
+            asOfDate = body.date;
+          }
+        } catch { /* leave this currency unconverted; convertedAmount() falls back to original for it */ }
+      }));
+
+      const result = { rates, fetchedAt: Date.now(), date: asOfDate };
+      localStorage.setItem(cacheKey, JSON.stringify(result));
+      return result;
+    }
 
     function buildPriceCard(row) {
       const card = document.createElement("div");
       card.className = "price-card";
+
+      const key = priceKey(row);
+      const watchBtn = document.createElement("button");
+      watchBtn.type = "button";
+      watchBtn.className = "watch-toggle" + (watchlist.has(key) ? " is-watched" : "");
+      watchBtn.textContent = watchlist.has(key) ? "★" : "☆";
+      watchBtn.setAttribute("aria-label", watchlist.has(key) ? "Remove from watchlist" : "Add to watchlist");
+      watchBtn.addEventListener("click", () => {
+        if (watchlist.has(key)) watchlist.delete(key); else watchlist.add(key);
+        saveWatchlist(watchlist);
+        if (watchlistOnlyCheckbox.checked) renderPriceGrid();
+        else {
+          watchBtn.classList.toggle("is-watched", watchlist.has(key));
+          watchBtn.textContent = watchlist.has(key) ? "★" : "☆";
+          watchBtn.setAttribute("aria-label", watchlist.has(key) ? "Remove from watchlist" : "Add to watchlist");
+        }
+      });
+      card.appendChild(watchBtn);
 
       const store = document.createElement("div");
       store.className = "store";
@@ -546,12 +948,13 @@
 
       const priceRow = document.createElement("div");
       priceRow.className = "price-row";
+      const { amount, currency } = convertedAmount(row);
       const price = document.createElement("span");
       price.className = "price";
-      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency }).format(row.price);
+      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
       const perG = document.createElement("span");
       perG.className = "per-g";
-      if (row.size_grams) perG.textContent = (row.price / row.size_grams).toFixed(2) + " " + row.currency + "/g";
+      if (row.size_grams) perG.textContent = (amount / row.size_grams).toFixed(2) + " " + currency + "/g";
       priceRow.append(price, perG);
       card.appendChild(priceRow);
 
@@ -577,11 +980,118 @@
       link.appendChild(a);
       card.appendChild(link);
 
+      card.append(buildManageControls(row));
+
       return card;
+    }
+
+    // edit (store/region/currency) and remove controls — posts to serve.py's /api/track;
+    // a plain static file server can't do this, same as the tracking form above
+    function buildManageControls(row) {
+      const wrap = document.createDocumentFragment();
+
+      const manageRow = document.createElement("div");
+      manageRow.className = "manage-row";
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "manage-link";
+      editBtn.textContent = "Edit";
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "manage-link danger";
+      removeBtn.textContent = "Remove";
+      manageRow.append(editBtn, removeBtn);
+      wrap.appendChild(manageRow);
+
+      const panel = document.createElement("div");
+      panel.className = "edit-panel";
+      panel.hidden = true;
+
+      const storeInput = document.createElement("input");
+      storeInput.type = "text";
+      storeInput.placeholder = "Store name";
+      storeInput.value = row.store;
+
+      const regionInput = document.createElement("input");
+      regionInput.type = "text";
+      regionInput.placeholder = "Region (blank to clear)";
+      regionInput.value = row.region || "";
+
+      const currencyInput = document.createElement("input");
+      currencyInput.type = "text";
+      currencyInput.placeholder = "Currency code";
+      currencyInput.value = row.currency;
+
+      const actions = document.createElement("div");
+      actions.className = "edit-panel-actions";
+      const saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "edit-save";
+      saveBtn.textContent = "Save";
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "edit-cancel";
+      cancelBtn.textContent = "Cancel";
+      actions.append(saveBtn, cancelBtn);
+
+      const status = document.createElement("p");
+      status.className = "edit-status";
+      status.hidden = true;
+
+      panel.append(storeInput, regionInput, currencyInput, actions, status);
+      wrap.appendChild(panel);
+
+      editBtn.addEventListener("click", () => { panel.hidden = !panel.hidden; });
+      cancelBtn.addEventListener("click", () => { panel.hidden = true; });
+
+      saveBtn.addEventListener("click", async () => {
+        saveBtn.disabled = true;
+        status.hidden = true;
+        try {
+          const body = await callTrackingApi("PATCH", {
+            url: row.url,
+            store: storeInput.value.trim() || null,
+            region: regionInput.value.trim() || null,
+            currency: currencyInput.value.trim() || null,
+          });
+          status.textContent = body.ok ? body.message + " Reloading…" : body.error;
+          status.className = "edit-status " + (body.ok ? "ok" : "error");
+          status.hidden = false;
+          if (body.ok) setTimeout(() => location.reload(), 1000);
+          else saveBtn.disabled = false;
+        } catch (err) {
+          status.textContent = err.message;
+          status.className = "edit-status error";
+          status.hidden = false;
+          saveBtn.disabled = false;
+        }
+      });
+
+      removeBtn.addEventListener("click", async () => {
+        if (!confirm(`Stop tracking "${row.product_name}"? This also deletes its saved price history.`)) return;
+        removeBtn.disabled = true;
+        try {
+          const body = await callTrackingApi("DELETE", { url: row.url });
+          if (body.ok) {
+            location.reload();
+          } else {
+            alert(body.error);
+            removeBtn.disabled = false;
+          }
+        } catch (err) {
+          alert(err.message);
+          removeBtn.disabled = false;
+        }
+      });
+
+      return wrap;
     }
 
     const sortSelect = document.getElementById("price-sort");
     const regionSelect = document.getElementById("price-region");
+    const watchlistOnlyCheckbox = document.getElementById("price-watchlist-only");
+    const currencySelect = document.getElementById("price-currency");
+    const fxNote = document.getElementById("fx-note");
     [...new Set(allPriceRows.map(r => r.region || "Unspecified"))].sort().forEach(region => {
       const opt = document.createElement("option");
       opt.value = region;
@@ -593,6 +1103,7 @@
     function renderPriceGrid() {
       let rows = [...allPriceRows];
       if (regionSelect.value !== "all") rows = rows.filter(r => (r.region || "Unspecified") === regionSelect.value);
+      if (watchlistOnlyCheckbox.checked) rows = rows.filter(r => watchlist.has(priceKey(r)));
       if (sortSelect.value === "price-desc") rows.sort((a, b) => b.price - a.price);
       else if (sortSelect.value === "store") rows.sort((a, b) => a.store.localeCompare(b.store));
       else rows.sort((a, b) => a.price - b.price);
@@ -601,7 +1112,7 @@
       if (!rows.length) {
         const empty = document.createElement("div");
         empty.className = "empty-state";
-        empty.textContent = "No products match this filter.";
+        empty.textContent = watchlistOnlyCheckbox.checked ? "Nothing on your watchlist yet — star a product below." : "No products match this filter.";
         priceGrid.appendChild(empty);
         return;
       }
@@ -609,7 +1120,57 @@
     }
     sortSelect.addEventListener("change", renderPriceGrid);
     regionSelect.addEventListener("change", renderPriceGrid);
-    renderPriceGrid();
+    watchlistOnlyCheckbox.addEventListener("change", renderPriceGrid);
+    renderPriceGrid(); // instant, in each product's original currency
+
+    currencySelect.addEventListener("change", async () => {
+      const target = currencySelect.value;
+      if (target === "original") {
+        displayCurrency = "original";
+        fxNote.hidden = true;
+        renderPriceGrid();
+        return;
+      }
+      currencySelect.disabled = true;
+      const { rates, date } = await loadFxRates(target);
+      currencySelect.disabled = false;
+
+      const stillNeeded = [...new Set(allPriceRows.map(r => r.currency))].filter(c => c !== target);
+      if (stillNeeded.length && !stillNeeded.some(c => c in rates)) {
+        // couldn't fetch a single rate — likely offline; fall back rather than show a dead conversion
+        fxNote.textContent = "Couldn't reach the exchange-rate service — showing original currency.";
+        fxNote.hidden = false;
+        currencySelect.value = "original";
+        displayCurrency = "original";
+      } else {
+        displayCurrency = target;
+        fxRates = rates;
+        fxNote.textContent = date
+          ? `Prices converted to ${target} at rates as of ${date} (approximate).`
+          : `Prices converted to ${target} (approximate).`;
+        fxNote.hidden = false;
+      }
+      renderPriceGrid();
+    });
+    // default to CAD, as requested — converts in the background once the instant original-currency render is up
+    currencySelect.dispatchEvent(new Event("change"));
+
+    // ---- what changed since last visit: watched price drops/restocks + upcoming harvest windows ----
+    const lastSeen = loadLastSeenPrices();
+    const priceChanges = [];
+    allPriceRows.filter(row => watchlist.has(priceKey(row))).forEach(row => {
+      const prev = lastSeen[priceKey(row)];
+      if (!prev) return;
+      if (row.price < prev.price) priceChanges.push(`${row.product_name} dropped to ${new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency }).format(row.price)}`);
+      else if (row.in_stock && !prev.in_stock) priceChanges.push(`${row.product_name} is back in stock`);
+    });
+    saveLastSeenPrices(allPriceRows);
+
+    const soonHarvests = upcomingHarvests(HARVEST, 7).map(({ row, days }) => `${row.region} harvest starts in ${days} day${days === 1 ? "" : "s"}`);
+
+    const alertLines = [...priceChanges, ...soonHarvests];
+    showAlertBanner(alertLines);
+    if (priceChanges.length) notify("Matcha Mania", priceChanges.join(" · "));
   }
 
   // ---- map ----
@@ -660,7 +1221,7 @@
     // de-dup products by store+product so repeated scrapes don't stack pins
     const latestProducts = new Map();
     PRICES.forEach(row => {
-      const key = row.store + "|" + row.product_name;
+      const key = priceKey(row);
       const existing = latestProducts.get(key);
       if (!existing || row.scraped_at > existing.scraped_at) latestProducts.set(key, row);
     });
@@ -838,6 +1399,11 @@
       li.appendChild(a);
       sourceList.appendChild(li);
     });
+  }
+
+  // ---- PWA: offline app-shell caching + installability ----
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
   }
 </script>
 </body>
