@@ -48,7 +48,7 @@ stores:
         # Region not stated on this SKU.
         region: null
 
-  - name: Paragon Tea Room
+  - name: Paragon tea
     currency: USD
     products:
       - url: https://paragontearoom.com/products/ceremonial-matcha
