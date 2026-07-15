@@ -1,0 +1,1978 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matcha Mania</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3c6130">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Matcha Mania">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  .viz-root {
+    --surface-1:      #fdfcf6;
+    --page:           #f5f1e4;
+    --text-primary:   #1c2117;
+    --text-secondary: #545a45;
+    --text-muted:     #8b8d78;
+    --gridline:       #e6e1cd;
+    --baseline:       #cfc9ae;
+    --border:         rgba(28,33,23,0.10);
+    --brand:          #3c6130;
+    --series-japan:   #4c7a3d;
+    --series-china:   #e0672c;
+    --series-korea:   #6b4a8a;
+    --series-muted:   #b7b39e;
+    --series-muted-fill: #ddd8c2;
+    --status-good:    #0ca30c;
+    --status-critical:#d03b3b;
+    --status-warning: #b5790a;
+    --pin-ring:       #fdfcf6;
+    --berry:          #c53d5f;
+    --berry-strong:   #9e2e49;
+    --berry-soft:     #fbe4e9;
+    --hero-wash:       radial-gradient(900px circle at 12% -10%, color-mix(in srgb, var(--berry) 14%, transparent), transparent 60%),
+                       radial-gradient(900px circle at 88% 5%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 55%);
+  }
+  @media (prefers-color-scheme: dark) {
+    .viz-root {
+      --surface-1:      #1b1f16;
+      --page:           #10130d;
+      --text-primary:   #f2efe2;
+      --text-secondary: #c4c0aa;
+      --text-muted:     #8d8a76;
+      --gridline:       #2b2f22;
+      --baseline:       #3b4030;
+      --border:         rgba(255,255,255,0.10);
+      --brand:          #6fae57;
+      --series-japan:   #4f9a3a;
+      --series-china:   #c2621f;
+      --series-korea:   #9573c0;
+      --series-muted:   #55584a;
+      --series-muted-fill: #313528;
+      --pin-ring:       #1b1f16;
+      --berry:          #ff8fab;
+      --berry-strong:   #ffb3c6;
+      --berry-soft:     rgba(255,143,171,0.16);
+      --hero-wash:       radial-gradient(900px circle at 12% -10%, color-mix(in srgb, var(--berry) 16%, transparent), transparent 60%),
+                         radial-gradient(900px circle at 88% 5%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 55%);
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    --surface-1:      #1b1f16;
+    --page:           #10130d;
+    --text-primary:   #f2efe2;
+    --text-secondary: #c4c0aa;
+    --text-muted:     #8d8a76;
+    --gridline:       #2b2f22;
+    --baseline:       #3b4030;
+    --border:         rgba(255,255,255,0.10);
+    --brand:          #6fae57;
+    --series-japan:   #4f9a3a;
+    --series-china:   #c2621f;
+    --series-korea:   #9573c0;
+    --series-muted:   #55584a;
+    --series-muted-fill: #313528;
+    --pin-ring:       #1b1f16;
+    --berry:          #ff8fab;
+    --berry-strong:   #ffb3c6;
+    --berry-soft:     rgba(255,143,171,0.16);
+    --hero-wash:       radial-gradient(900px circle at 12% -10%, color-mix(in srgb, var(--berry) 16%, transparent), transparent 60%),
+                       radial-gradient(900px circle at 88% 5%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 55%);
+  }
+  :root[data-theme="light"] .viz-root {
+    --surface-1:      #fdfcf6;
+    --page:           #f5f1e4;
+    --text-primary:   #1c2117;
+    --text-secondary: #545a45;
+    --text-muted:     #8b8d78;
+    --gridline:       #e6e1cd;
+    --baseline:       #cfc9ae;
+    --border:         rgba(28,33,23,0.10);
+    --brand:          #3c6130;
+    --series-japan:   #4c7a3d;
+    --series-china:   #e0672c;
+    --series-korea:   #6b4a8a;
+    --series-muted:   #b7b39e;
+    --series-muted-fill: #ddd8c2;
+    --pin-ring:       #fdfcf6;
+    --berry:          #c53d5f;
+    --berry-strong:   #9e2e49;
+    --berry-soft:     #fbe4e9;
+    --hero-wash:       radial-gradient(900px circle at 12% -10%, color-mix(in srgb, var(--berry) 14%, transparent), transparent 60%),
+                       radial-gradient(900px circle at 88% 5%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 55%);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  #prices, #pantry, #regions, #calendar { scroll-margin-top: 64px; }
+
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  .viz-root {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--text-primary);
+    background: var(--hero-wash), var(--surface-1);
+    min-height: 100vh;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: color-mix(in srgb, var(--surface-1) 78%, transparent);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom: 1px solid var(--border);
+    background-image: linear-gradient(90deg, var(--berry), var(--brand));
+    background-repeat: no-repeat;
+    background-size: 100% 2px;
+    background-position: bottom;
+  }
+  .site-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .wordmark {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .site-nav { display: flex; gap: 20px; flex-wrap: wrap; }
+  .site-nav a {
+    position: relative;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding-bottom: 2px;
+  }
+  .site-nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: -2px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--brand), var(--berry));
+    transition: right 0.2s ease;
+  }
+  .site-nav a:hover { color: var(--text-primary); }
+  .site-nav a:hover::after { right: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .site-nav a::after { transition: none; }
+  }
+
+  .notif-toggle {
+    font-size: 1rem;
+    line-height: 1;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 9px;
+    cursor: pointer;
+    color: var(--text-primary);
+  }
+  .notif-toggle:hover { border-color: var(--brand); }
+  .notif-toggle.is-on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+
+  .alert-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--berry-soft);
+    border: 1px solid color-mix(in srgb, var(--berry) 40%, transparent);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 20px 0 0;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+  }
+  .alert-banner[hidden] { display: none; }
+  .alert-banner #alert-banner-text { margin: 0; }
+  .alert-banner button {
+    font: inherit;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    flex: none;
+  }
+  .alert-banner button:hover { color: var(--text-primary); }
+
+  .site-main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+
+  .page-intro { padding: 32px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .page-intro h1 {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+    background: linear-gradient(90deg, var(--brand) 0%, var(--berry) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .page-intro .lede { margin: 0 0 16px; color: var(--text-secondary); font-size: 0.98rem; max-width: 640px; }
+
+  .note-inline {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    background: var(--berry-soft);
+    border-radius: 12px;
+    padding: 8px 16px;
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    max-width: 100%;
+  }
+  .note-inline strong { color: var(--berry-strong); }
+
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+  .feature-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-1);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .feature-tile:hover {
+    transform: translateY(-3px);
+    border-color: var(--brand);
+    box-shadow: 0 10px 28px color-mix(in srgb, var(--brand) 18%, transparent), 0 2px 8px rgba(0,0,0,0.06);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .feature-tile:hover { transform: none; }
+  }
+  .feature-icon { font-size: 1.4rem; }
+  .feature-title { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); }
+  .feature-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; }
+
+  .section { padding: 28px 0; border-bottom: 1px solid var(--border); }
+  .section:last-of-type { border-bottom: none; }
+  .section-head { margin-bottom: 14px; }
+  .section-head h2 { font-family: "Space Grotesk", system-ui, sans-serif; font-size: 1.15rem; margin: 0 0 2px; font-weight: 600; }
+  .section-head .section-sub { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
+
+  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; font-size: 0.82rem; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .swatch.sq { border-radius: 3px; }
+  button.legend-item {
+    font: inherit;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 2px 8px;
+    margin: -2px 0;
+    cursor: pointer;
+    color: inherit;
+  }
+  button.legend-item:hover { border-color: var(--border); }
+  button.legend-item.is-active { background: var(--berry-soft); color: var(--berry-strong); font-weight: 600; }
+
+  .empty-state { color: var(--text-muted); font-size: 0.88rem; padding: 18px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
+
+  /* filters */
+  .filter-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; font-size: 0.82rem; color: var(--text-secondary); }
+  .filter-row[hidden] { display: none; }
+  .filter-row label { display: flex; align-items: center; gap: 6px; }
+  .filter-row select {
+    font: inherit;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 12px;
+  }
+
+  /* track-a-new-matcha form */
+  .track-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .track-form[hidden] { display: none; }
+  .track-form input {
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  .track-form input[type="url"] { flex: 1 1 260px; }
+  .track-form input[type="text"] { flex: 0 1 160px; }
+  .track-form button {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(90deg, var(--brand), var(--berry));
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .track-form button:disabled { opacity: 0.6; cursor: default; }
+  .track-status { font-size: 0.82rem; margin: 0 0 14px; }
+  .track-status.ok { color: var(--brand); }
+  .track-status.error { color: var(--status-critical); }
+  .track-status[hidden] { display: none; }
+
+  .section-actions { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .refresh-btn {
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+  }
+  .refresh-btn:hover { border-color: var(--brand); }
+  .refresh-btn:disabled { opacity: 0.6; cursor: default; }
+  .refresh-status { font-size: 0.8rem; color: var(--text-muted); }
+  .refresh-status.error { color: var(--status-critical); }
+  .refresh-status[hidden] { display: none; }
+
+  /* per-card manage (edit/remove) controls */
+  .manage-row { display: flex; gap: 12px; margin-top: 8px; }
+  .manage-link { font: inherit; font-size: 0.75rem; background: none; border: none; color: var(--text-muted); text-decoration: underline; cursor: pointer; padding: 0; }
+  .manage-link:hover { color: var(--text-primary); }
+  .manage-link.danger:hover { color: var(--status-critical); }
+  .manage-link:disabled { opacity: 0.6; cursor: default; }
+
+  .edit-panel { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .edit-panel[hidden] { display: none; }
+  .edit-panel input {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    width: 100%;
+  }
+  .edit-panel-actions { display: flex; gap: 8px; }
+  .edit-panel-actions button { font: inherit; font-size: 0.78rem; font-weight: 600; border-radius: 6px; padding: 4px 12px; cursor: pointer; }
+  .edit-panel-actions button:disabled { opacity: 0.6; cursor: default; }
+  .edit-save { color: #fff; background: var(--brand); border: none; }
+  .edit-cancel { color: var(--text-secondary); background: var(--surface-1); border: 1px solid var(--border); }
+  .edit-status { font-size: 0.75rem; margin: 2px 0 0; }
+  .edit-status.ok { color: var(--brand); }
+  .edit-status.error { color: var(--status-critical); }
+  .edit-status[hidden] { display: none; }
+
+  /* price cards */
+  .price-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .price-card {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    background: var(--page);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .watch-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1rem;
+    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 2px;
+  }
+  .watch-toggle.is-watched { color: var(--berry); }
+  .price-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--berry);
+    box-shadow: 0 10px 28px color-mix(in srgb, var(--berry) 22%, transparent), 0 2px 8px rgba(0,0,0,0.06);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .price-card:hover { transform: none; }
+  }
+  .price-card .store { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; padding-right: 22px; }
+  .price-card .name { font-weight: 600; margin: 2px 0 8px; font-size: 0.95rem; }
+  .price-card .name:has(+ .notes) { margin-bottom: 2px; }
+  .price-card .notes { color: var(--text-muted); font-size: 0.72rem; margin: 0 0 8px; }
+  .price-card .price-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .price-card .price { font-size: 1.3rem; font-weight: 700; }
+  .price-card .per-g { color: var(--text-muted); font-size: 0.72rem; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+  .badge.good { color: var(--status-good); background: color-mix(in srgb, var(--status-good) 15%, transparent); }
+  .badge.critical { color: var(--status-critical); background: color-mix(in srgb, var(--status-critical) 15%, transparent); }
+  .badge.warning { color: var(--status-warning); background: color-mix(in srgb, var(--status-warning) 15%, transparent); }
+  .badge.neutral { color: var(--text-muted); background: color-mix(in srgb, var(--text-muted) 15%, transparent); }
+  .price-card .meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+  .similar-matcha { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 0.75rem; }
+  .similar-matcha-label { color: var(--text-muted); margin-bottom: 4px; }
+  .similar-matcha-link { display: block; color: var(--brand); text-decoration: none; margin-bottom: 2px; }
+  .similar-matcha-link:hover { text-decoration: underline; }
+  .price-card a { color: var(--brand); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+  .price-card a:hover { text-decoration: underline; }
+
+  /* pantry */
+  .pantry-add-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pantry-add-form[hidden] { display: none; }
+  .pantry-add-form input {
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  .pantry-add-form input[type="text"] { flex: 0 1 160px; }
+  .pantry-add-form input[type="number"] { flex: 0 1 110px; }
+  .pantry-add-form button {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(90deg, var(--brand), var(--berry));
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .pantry-add-form button:disabled { opacity: 0.6; cursor: default; }
+  .pantry-status { font-size: 0.82rem; margin: 0 0 14px; }
+  .pantry-status.ok { color: var(--brand); }
+  .pantry-status.error { color: var(--status-critical); }
+  .pantry-status[hidden] { display: none; }
+
+  .pantry-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .pantry-card { border: 1px solid var(--border); border-radius: 14px; padding: 14px; background: var(--page); }
+  .pantry-card .name { font-weight: 600; font-size: 0.95rem; }
+  .pantry-card .store { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; }
+  .pantry-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pantry-stats { font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+  .pantry-predict, .pantry-meta { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px; }
+  .pantry-usage-form { display: flex; gap: 6px; margin: 10px 0; }
+  .pantry-usage-form input {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    width: 90px;
+  }
+  .pantry-usage-form button {
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .pantry-usage-form button:disabled { opacity: 0.6; cursor: default; }
+
+  .pantry-photo-form { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; align-items: center; }
+  .pantry-photo-form input[type="text"] {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    flex: 1 1 100px;
+  }
+  .pantry-photo-form input[type="file"] { font-size: 0.75rem; max-width: 140px; }
+  .pantry-photo-form button {
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .pantry-photo-form button:disabled { opacity: 0.6; cursor: default; }
+
+  .photo-log-head { margin: 20px 0 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .photo-log-head h3 { font-family: "Space Grotesk", system-ui, sans-serif; font-size: 1.02rem; margin: 0 0 2px; font-weight: 600; }
+  .photo-log { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  .photo-card { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--page); }
+  .photo-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--surface-1); }
+  .photo-card .photo-meta { padding: 10px 12px; }
+  .photo-card .photo-item-name { font-weight: 600; font-size: 0.85rem; }
+  .photo-card .photo-caption { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; }
+  .photo-card .photo-date { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+  .photo-card .photo-remove { margin: 0 12px 10px; }
+
+  /* map */
+  .map-wrap { position: relative; }
+  #map { width: 100%; height: 420px; border-radius: 12px; z-index: 0; }
+  .map-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+  .viz-root .leaflet-tile-pane { filter: saturate(0.85) sepia(0.12) hue-rotate(45deg); }
+  :root[data-theme="dark"] .viz-root .leaflet-tile-pane { filter: invert(0.9) hue-rotate(90deg) brightness(0.95) saturate(0.85); }
+  :root[data-theme="light"] .viz-root .leaflet-tile-pane { filter: saturate(0.85) sepia(0.12) hue-rotate(45deg); }
+  @media (prefers-color-scheme: dark) {
+    .viz-root .leaflet-tile-pane { filter: invert(0.9) hue-rotate(90deg) brightness(0.95) saturate(0.85); }
+  }
+  .viz-root .leaflet-popup-content-wrapper { background: var(--surface-1); color: var(--text-primary); border-radius: 10px; }
+  .viz-root .leaflet-popup-tip { background: var(--surface-1); }
+  .viz-root .leaflet-popup-content { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 0.82rem; line-height: 1.4; margin: 10px 12px; }
+  .viz-root .leaflet-popup-content strong { display: block; font-size: 0.88rem; margin-bottom: 3px; }
+  .shop-pin { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--brand); box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  .shop-pin span { transform: rotate(45deg); font-size: 13px; }
+
+  /* timeline */
+  .timeline { overflow-x: auto; }
+  .tl-grid { min-width: 640px; position: relative; }
+  .tl-months { display: grid; grid-template-columns: 190px repeat(12, 1fr); font-size: 0.72rem; color: var(--text-muted); border-bottom: 1px solid var(--gridline); padding-bottom: 6px; margin-bottom: 4px; }
+  .tl-months div { text-align: center; }
+  .tl-months div:first-child { text-align: left; }
+  .tl-row { display: grid; grid-template-columns: 190px repeat(12, 1fr); align-items: center; min-height: 44px; border-bottom: 1px solid var(--gridline); transition: opacity 0.25s ease; }
+  .tl-row:last-child { border-bottom: none; }
+  .tl-label { font-size: 0.78rem; color: var(--text-secondary); padding-right: 8px; }
+  .tl-label strong { color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
+  .tl-label-meta { display: block; }
+  .tl-in-season-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--status-good); flex: none; }
+  .tl-track { position: relative; grid-column: 2 / 14; height: 40px; }
+  .tl-bar { position: absolute; top: 0; height: 20px; border-radius: 4px; cursor: pointer; transition: width 0.6s ease; }
+  .tl-bar:hover, .tl-bar:focus { outline: 2px solid var(--text-primary); outline-offset: 1px; }
+  /* wrapper carries a >=24px hit target; the visible bar inside it stays a thin 3-5px strip */
+  .tl-buy-window-hit { position: absolute; top: 20px; height: 20px; display: flex; align-items: center; cursor: pointer; }
+  .tl-buy-window-hit:focus { outline: 2px solid var(--text-primary); outline-offset: 1px; }
+  .tl-buy-window { width: 100%; height: 3px; border-radius: 2px; background: var(--berry); }
+  .tl-buy-window-hit:hover .tl-buy-window, .tl-buy-window-hit:focus .tl-buy-window { height: 5px; }
+  @media (prefers-reduced-motion: reduce) {
+    .tl-bar { transition: none; }
+  }
+
+  /* line + label stay within the grid's own box (top >= 0) since .timeline's overflow-x:auto
+     implicitly turns overflow-y visible into auto too, which would clip anything positioned
+     above the grid's top edge */
+  .tl-today-line { position: absolute; top: 26px; bottom: 0; width: 2px; background: var(--berry); pointer-events: none; z-index: 1; }
+  .tl-today-line::before {
+    content: "Today";
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--berry-strong);
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  /* tooltip */
+  .tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--text-primary);
+    color: var(--page);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    max-width: 260px;
+    line-height: 1.4;
+    z-index: 1000;
+    display: none;
+  }
+  .tooltip strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+  .tooltip .muted { opacity: 0.75; }
+
+  details.table-toggle summary { cursor: pointer; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px; }
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  table.data-table th, table.data-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--gridline); vertical-align: top; }
+  table.data-table th { color: var(--text-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  table.data-table a { color: inherit; }
+
+  .site-footer { border-top: 1px solid var(--border); }
+  .site-footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .site-footer .site-name { font-size: 0.85rem; color: var(--text-secondary); }
+  .footer-sources { font-size: 0.75rem; color: var(--text-muted); }
+  .footer-sources a { color: inherit; }
+  .footer-sources li { margin-bottom: 3px; }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="wordmark" href="#top">🍓🍵 Matcha Mania</a>
+      <nav class="site-nav">
+        <a href="#prices">Prices</a>
+        <a href="#pantry">Pantry</a>
+        <a href="#regions">Regions &amp; map</a>
+        <a href="#calendar">Harvest calendar</a>
+      </nav>
+      <button class="notif-toggle" id="notif-toggle" type="button" hidden></button>
+    </div>
+  </header>
+
+  <main class="site-main" id="top">
+    <div class="alert-banner" id="alert-banner" hidden>
+      <p id="alert-banner-text"></p>
+      <button type="button" id="alert-banner-dismiss" aria-label="Dismiss">✕</button>
+    </div>
+
+    <div class="page-intro reveal">
+      <h1>Your matcha, start to finish</h1>
+      <p class="lede">Where it grows, when it's picked, what it costs, and what's in your pantry.</p>
+      <p class="note-inline" title="Ichibancha is the only flush most producers shade and grind into ceremonial matcha; everything later is lower-grade or not matcha at all.">🍓 <strong>Peak season: early Apr &ndash; late May</strong>, moving north across Japan</p>
+
+      <div class="feature-grid">
+        <a class="feature-tile" href="#prices">
+          <span class="feature-icon">🛒</span>
+          <span class="feature-title">Prices</span>
+          <span class="feature-desc">Track any matcha by URL. Alerts on drops &amp; restocks.</span>
+        </a>
+        <a class="feature-tile" href="#pantry">
+          <span class="feature-icon">🫙</span>
+          <span class="feature-title">Pantry</span>
+          <span class="feature-desc">Log what you own and use. Flags what's stale or low.</span>
+        </a>
+        <a class="feature-tile" href="#regions">
+          <span class="feature-icon">🗺️</span>
+          <span class="feature-title">Regions</span>
+          <span class="feature-desc">Where it's grown, mapped against your tracked stores.</span>
+        </a>
+        <a class="feature-tile" href="#calendar">
+          <span class="feature-icon">📅</span>
+          <span class="feature-title">Calendar</span>
+          <span class="feature-desc">When each region peaks — and when to buy.</span>
+        </a>
+      </div>
+    </div>
+
+    <section class="section reveal" id="prices">
+      <div class="section-head">
+        <h2>Current prices</h2>
+        <p class="section-sub">Updated daily.</p>
+      </div>
+      <div class="section-actions">
+        <button type="button" class="refresh-btn" id="refresh-checks-btn">🔄 Refresh checks</button>
+        <span class="refresh-status" id="refresh-status" hidden></span>
+        <button type="button" class="refresh-btn" id="track-form-toggle">+ Track a new matcha</button>
+      </div>
+      <form class="track-form" id="track-form" hidden>
+        <input type="url" id="track-url" placeholder="Paste a matcha product URL…" required>
+        <input type="text" id="track-store" placeholder="Store name (optional)">
+        <input type="text" id="track-region" placeholder="Region (optional)">
+        <input type="text" id="track-grade" placeholder="Grade (optional)">
+        <input type="text" id="track-cultivar" placeholder="Cultivar (optional)">
+        <button type="submit">+ Track</button>
+      </form>
+      <p class="track-status" id="track-status" hidden></p>
+      <div class="filter-row" id="price-filters" hidden>
+        <label>Sort
+          <select id="price-sort">
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="store">Store name</option>
+          </select>
+        </label>
+        <label>Region
+          <select id="price-region">
+            <option value="all">All regions</option>
+          </select>
+        </label>
+        <label>
+          <input type="checkbox" id="price-watchlist-only">
+          Watchlist only
+        </label>
+      </div>
+      <div id="price-grid" class="price-grid"></div>
+    </section>
+
+    <section class="section reveal" id="pantry">
+      <div class="section-head">
+        <h2>Pantry</h2>
+        <p class="section-sub">Track what you own and log usage — flags what's going stale or about to run out.</p>
+      </div>
+      <div class="section-actions">
+        <button type="button" class="refresh-btn" id="pantry-form-toggle">+ Add to pantry</button>
+      </div>
+      <form class="pantry-add-form" id="pantry-add-form" hidden>
+        <input type="text" id="pantry-product-name" placeholder="Product name" required>
+        <input type="number" id="pantry-size-grams" placeholder="Size (g)" min="1" step="1" required>
+        <input type="text" id="pantry-store" placeholder="Store (optional)">
+        <input type="text" id="pantry-region" placeholder="Region (optional)">
+        <input type="text" id="pantry-grade" placeholder="Grade (optional)">
+        <input type="text" id="pantry-cultivar" placeholder="Cultivar (optional)">
+        <button type="submit">Add</button>
+      </form>
+      <p class="pantry-status" id="pantry-add-status" hidden></p>
+      <div id="pantry-list" class="pantry-list"></div>
+
+      <div class="photo-log-head">
+        <h3>Photo log</h3>
+        <p class="section-sub">Color is a real quality signal — vibrant green vs. dull or yellowish. A visual record over time, across every tin.</p>
+      </div>
+      <div id="photo-log" class="photo-log"></div>
+    </section>
+
+    <section class="section reveal" id="regions">
+      <div class="section-head">
+        <h2>Where it's grown</h2>
+        <p class="section-sub">Click a pin for details.</p>
+      </div>
+      <div class="legend" id="map-legend"></div>
+      <div class="map-wrap">
+        <div id="map" role="img" aria-label="Map of matcha and tea growing regions in China, South Korea, and Japan, with markers for tracked stores" title="Pins mark representative city/county centers, not surveyed farm boundaries."></div>
+        <div class="tooltip" id="tooltip"></div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="calendar">
+      <div class="section-head">
+        <h2>Harvest calendar</h2>
+        <p class="section-sub">Color = graded into matcha. Click legend to filter.</p>
+      </div>
+      <div class="legend" id="tl-legend"></div>
+      <div class="timeline">
+        <div class="tl-grid" id="tl-grid"></div>
+      </div>
+      <p class="map-note" title="Derived from harvest + kuradashi release timing, not a model fit on price history.">Buy windows follow harvest timing, not price history.</p>
+    </section>
+
+    <section class="section reveal">
+      <details class="table-toggle">
+        <summary>Full data table</summary>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="data-table"></table>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="site-name">🍓🍵 Matcha Mania</div>
+      <div class="footer-sources">
+        <strong style="color:var(--text-secondary)">Sources</strong>
+        <ul id="source-list"></ul>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="data/harvest_seasons.js" onerror="window.HARVEST_SEASONS = undefined"></script>
+<script src="data/matcha_prices.js" onerror="window.MATCHA_PRICES = undefined"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  const HARVEST = window.HARVEST_SEASONS || [];
+  const PRICES = window.MATCHA_PRICES || [];
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const now = new Date();
+
+  function relativeTime(date) {
+    const days = Math.floor((now - date) / 86400000);
+    if (days <= 0) return "today";
+    if (days === 1) return "yesterday";
+    if (days < 7) return days + " days ago";
+    if (days < 30) { const weeks = Math.floor(days / 7); return weeks + (weeks === 1 ? " week ago" : " weeks ago"); }
+    const months = Math.floor(days / 30);
+    return months + (months === 1 ? " month ago" : " months ago");
+  }
+
+  const COUNTRY_COLOR = { "Japan": "var(--series-japan)", "China": "var(--series-china)", "South Korea": "var(--series-korea)" };
+  function colorFor(row) { return row.used_for_matcha ? COUNTRY_COLOR[row.country] : "var(--series-muted)"; }
+  function fillFor(row) { return row.used_for_matcha ? COUNTRY_COLOR[row.country] : "var(--series-muted-fill)"; }
+  function cssVar(value) {
+    const match = /^var\((--[a-zA-Z0-9-]+)\)$/.exec(value);
+    if (!match) return value;
+    return getComputedStyle(document.querySelector(".viz-root")).getPropertyValue(match[1]).trim() || value;
+  }
+  // url + size_grams, NOT product_name — a product's display name is just scraped text
+  // and can legitimately change between scrapes (it did: titles used to have size/variant
+  // info appended, now that lives in variant_label instead). Keying on product_name made
+  // pre- and post-cleanup scrapes of the exact same product look like two different
+  // products, so both survived the "latest per product" dedup — the classic symptom was
+  // every refreshed product showing as a duplicate card. The URL is Shopify's own stable
+  // identifier for the product page and never changes between scrapes; size_grams still
+  // disambiguates different tin sizes sold under that one URL.
+  function priceKey(row) { return row.url + "|" + row.size_grams; }
+
+  // ---- tooltip ----
+  const tooltip = document.getElementById("tooltip");
+  function showTooltip(evt, html) {
+    tooltip.innerHTML = "";
+    tooltip.appendChild(html);
+    tooltip.style.display = "block";
+    positionTooltip(evt);
+  }
+  function positionTooltip(evt) {
+    const pad = 14;
+    let x = evt.clientX + pad;
+    let y = evt.clientY + pad;
+    if (x + 270 > window.innerWidth) x = evt.clientX - 270 - pad;
+    if (y + 120 > window.innerHeight) y = evt.clientY - 120 - pad;
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+  }
+  function hideTooltip() { tooltip.style.display = "none"; }
+  function showTooltipNearElement(el, html) {
+    tooltip.innerHTML = "";
+    tooltip.appendChild(html);
+    tooltip.style.display = "block";
+    const rect = el.getBoundingClientRect();
+    const pad = 14;
+    let x = rect.left;
+    let y = rect.bottom + pad;
+    if (x + 270 > window.innerWidth) x = window.innerWidth - 270 - pad;
+    if (y + 120 > window.innerHeight) y = rect.top - 120 - pad;
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+  }
+  // keeps hover and keyboard focus showing identical tooltip content
+  function bindHoverTooltip(el, buildContent) {
+    el.addEventListener("pointerenter", (e) => showTooltip(e, buildContent()));
+    el.addEventListener("pointermove", positionTooltip);
+    el.addEventListener("pointerleave", hideTooltip);
+    el.addEventListener("focus", () => showTooltipNearElement(el, buildContent()));
+    el.addEventListener("blur", hideTooltip);
+  }
+  function tooltipBody(title, lines) {
+    const wrap = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = title;
+    wrap.appendChild(strong);
+    lines.forEach(l => {
+      const div = document.createElement("div");
+      if (l.muted) div.className = "muted";
+      div.textContent = l.text;
+      wrap.appendChild(div);
+    });
+    return wrap;
+  }
+
+  // ---- legends ----
+  // interactive: true renders each item as a toggle button that calls onToggle(group) on click
+  function buildLegend(el, items, { interactive = false, onToggle } = {}) {
+    items.forEach(it => {
+      const isToggle = interactive && it.group;
+      const item = document.createElement(isToggle ? "button" : "div");
+      item.className = "legend-item";
+      if (isToggle) {
+        item.type = "button";
+        item.dataset.group = it.group;
+        item.addEventListener("click", () => onToggle(it.group));
+      }
+      const sw = document.createElement("span");
+      sw.className = "swatch" + (it.square ? " sq" : "");
+      sw.style.background = it.color;
+      const label = document.createElement("span");
+      label.textContent = it.label;
+      item.append(sw, label);
+      el.appendChild(item);
+    });
+  }
+  const legendItems = [
+    { label: "Japan", color: "var(--series-japan)", group: "Japan" },
+    { label: "China", color: "var(--series-china)", group: "China" },
+    { label: "South Korea", color: "var(--series-korea)", group: "South Korea" },
+    { label: "Not matcha", color: "var(--series-muted)", group: "muted" },
+  ];
+  let timelineFilter = null;
+  function setTimelineFilter(group) {
+    timelineFilter = timelineFilter === group ? null : group;
+    document.querySelectorAll(".tl-row").forEach(row => {
+      row.style.opacity = !timelineFilter || row.dataset.group === timelineFilter ? "1" : "0.25";
+    });
+    document.querySelectorAll("#tl-legend .legend-item[data-group]").forEach(btn => {
+      btn.classList.toggle("is-active", btn.dataset.group === timelineFilter);
+    });
+  }
+  buildLegend(document.getElementById("tl-legend"), [...legendItems, { label: "🛒 Good time to buy", color: "var(--berry)", square: true }], { interactive: true, onToggle: setTimelineFilter });
+  buildLegend(document.getElementById("map-legend"), [...legendItems, { label: "Tracked store", color: "var(--brand)", square: true }]);
+
+  // ---- watchlist (localStorage-backed; no server, this is a personal-use static site) ----
+  const WATCHLIST_KEY = "matcha-mania:watchlist";
+  const LAST_SEEN_KEY = "matcha-mania:last-seen-prices";
+
+  function loadWatchlist() {
+    try { return new Set(JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || []); }
+    catch { return new Set(); }
+  }
+  function saveWatchlist(set) { localStorage.setItem(WATCHLIST_KEY, JSON.stringify([...set])); }
+
+  function loadLastSeenPrices() {
+    try { return JSON.parse(localStorage.getItem(LAST_SEEN_KEY)) || {}; }
+    catch { return {}; }
+  }
+  function saveLastSeenPrices(rows) {
+    const snapshot = {};
+    rows.forEach(row => { snapshot[priceKey(row)] = { price: row.price, in_stock: row.in_stock }; });
+    localStorage.setItem(LAST_SEEN_KEY, JSON.stringify(snapshot));
+  }
+
+  // ---- notification permission toggle ----
+  const notifToggle = document.getElementById("notif-toggle");
+  function refreshNotifToggle() {
+    if (!("Notification" in window)) return;
+    notifToggle.hidden = false;
+    const granted = Notification.permission === "granted";
+    notifToggle.textContent = granted ? "🔔 Alerts on" : "🔕 Get alerts";
+    notifToggle.classList.toggle("is-on", granted);
+    notifToggle.title = granted
+      ? "You'll get a notification here when a watchlist price drops or restocks"
+      : "Turn on notifications for watchlist price drops and restocks";
+    notifToggle.disabled = Notification.permission === "denied";
+  }
+  if ("Notification" in window) {
+    notifToggle.addEventListener("click", async () => {
+      if (Notification.permission === "default") await Notification.requestPermission();
+      refreshNotifToggle();
+    });
+    refreshNotifToggle();
+  }
+
+  function notify(title, body) {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body, icon: "icons/icon-192.png" });
+    }
+  }
+
+  // ---- alert banner (what changed since your last visit) ----
+  const alertBanner = document.getElementById("alert-banner");
+  const alertBannerText = document.getElementById("alert-banner-text");
+  document.getElementById("alert-banner-dismiss").addEventListener("click", () => { alertBanner.hidden = true; });
+  function showAlertBanner(lines) {
+    if (!lines.length) return;
+    alertBannerText.textContent = lines.join(" · ");
+    alertBanner.hidden = false;
+  }
+
+  // real, data-derived reason to come back: a tracked region's harvest window opening soon
+  function daysUntilMonthStart(month) {
+    let target = new Date(now.getFullYear(), month - 1, 1);
+    if (target < now) target = new Date(now.getFullYear() + 1, month - 1, 1);
+    return Math.ceil((target - now) / 86400000);
+  }
+  function upcomingHarvests(harvest, withinDays) {
+    return harvest
+      .filter(row => row.used_for_matcha)
+      .map(row => ({ row, days: daysUntilMonthStart(row.start_month) }))
+      .filter(({ days }) => days > 0 && days <= withinDays);
+  }
+
+  // ---- tracking API helper (posts to serve.py's /api/track; a plain static file server
+  // can't do this). Distinguishes "never got a response" from "got a response we can't
+  // parse" — the latter usually means serve.py is running OLD code (it's a long-running
+  // process; editing the .py file doesn't reload it) and needs a restart, which is a very
+  // different fix than "you're not running serve.py at all".
+  async function callTrackingApi(method, payload, path = "/api/track") {
+    let res;
+    try {
+      res = await fetch(path, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      throw new Error("Couldn't reach the tracking server. Make sure the site is running via `python3 serve.py`, not a plain static file server.");
+    }
+    try {
+      return await res.json();
+    } catch {
+      throw new Error(
+        `The tracking server responded but not in the expected format (HTTP ${res.status}). ` +
+        "If you recently updated the code, stop and restart `python3 serve.py` to pick up the change — it doesn't reload automatically."
+      );
+    }
+  }
+
+  // ---- collapsible "add" forms: keep content (prices, pantry) the first thing you see,
+  // not a wall of input fields — the form tucks behind a toggle button instead.
+  function wireFormToggle(toggleId, formId, focusFieldId) {
+    const toggleBtn = document.getElementById(toggleId);
+    const form = document.getElementById(formId);
+    const openLabel = toggleBtn.textContent;
+    toggleBtn.addEventListener("click", () => {
+      form.hidden = !form.hidden;
+      toggleBtn.textContent = form.hidden ? openLabel : "Cancel";
+      if (!form.hidden) document.getElementById(focusFieldId).focus();
+    });
+  }
+  wireFormToggle("track-form-toggle", "track-form", "track-url");
+  wireFormToggle("pantry-form-toggle", "pantry-add-form", "pantry-product-name");
+
+  // ---- track a new matcha ----
+  const trackForm = document.getElementById("track-form");
+  const trackStatus = document.getElementById("track-status");
+  trackForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const url = document.getElementById("track-url").value.trim();
+    const store = document.getElementById("track-store").value.trim();
+    const region = document.getElementById("track-region").value.trim();
+    const grade = document.getElementById("track-grade").value.trim();
+    const cultivar = document.getElementById("track-cultivar").value.trim();
+    if (!url) return;
+
+    const submitBtn = trackForm.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    trackStatus.hidden = true;
+
+    try {
+      const body = await callTrackingApi("POST", { url, store: store || null, region: region || null, grade: grade || null, cultivar: cultivar || null });
+      trackStatus.textContent = body.ok ? body.message + " Reloading…" : body.error;
+      trackStatus.className = "track-status " + (body.ok ? "ok" : "error");
+      trackStatus.hidden = false;
+      if (body.ok) {
+        trackForm.reset();
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      trackStatus.textContent = err.message;
+      trackStatus.className = "track-status error";
+      trackStatus.hidden = false;
+      submitBtn.disabled = false;
+    }
+  });
+
+  // ---- refresh checks: rescrape every already-tracked product ----
+  const refreshBtn = document.getElementById("refresh-checks-btn");
+  const refreshStatus = document.getElementById("refresh-status");
+  refreshBtn.addEventListener("click", async () => {
+    const originalLabel = refreshBtn.textContent;
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = "🔄 Refreshing…";
+    refreshStatus.hidden = true;
+    try {
+      const body = await callTrackingApi("POST", {}, "/api/refresh");
+      refreshStatus.textContent = body.ok ? body.message + " Reloading…" : body.error;
+      refreshStatus.className = "refresh-status" + (body.ok ? "" : " error");
+      refreshStatus.hidden = false;
+      if (body.ok) {
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = originalLabel;
+      }
+    } catch (err) {
+      refreshStatus.textContent = err.message;
+      refreshStatus.className = "refresh-status error";
+      refreshStatus.hidden = false;
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = originalLabel;
+    }
+  });
+
+  // ---- pantry: inventory + usage logging ----
+  function makeBadge(text, kind) {
+    const span = document.createElement("span");
+    span.className = "badge " + kind;
+    span.textContent = text;
+    return span;
+  }
+
+  function buildPantryCard(item) {
+    const card = document.createElement("div");
+    card.className = "pantry-card";
+
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = item.product_name;
+    card.appendChild(name);
+
+    const meta = [item.store, item.region].filter(Boolean).join(" · ");
+    if (meta) {
+      const store = document.createElement("div");
+      store.className = "store";
+      store.textContent = meta;
+      card.appendChild(store);
+    }
+
+    const badges = document.createElement("div");
+    badges.className = "pantry-badges";
+    if (item.is_finished) {
+      badges.appendChild(makeBadge("Finished", "neutral"));
+    } else if (!item.opened_date) {
+      badges.appendChild(makeBadge("Unopened", "neutral"));
+    } else {
+      if (item.is_stale) badges.appendChild(makeBadge("Stale", "critical"));
+      if (item.needs_reorder) badges.appendChild(makeBadge("Reorder soon", "warning"));
+      if (!item.is_stale && !item.needs_reorder) badges.appendChild(makeBadge("Fresh", "good"));
+    }
+    card.appendChild(badges);
+
+    const stats = document.createElement("div");
+    stats.className = "pantry-stats";
+    stats.textContent = `${item.remaining_grams}g of ${item.size_grams}g left`;
+    card.appendChild(stats);
+
+    if (item.days_until_empty != null) {
+      const predict = document.createElement("div");
+      predict.className = "pantry-predict";
+      predict.textContent = `~${item.daily_rate_grams}g/day — about ${item.days_until_empty} day${item.days_until_empty === 1 ? "" : "s"} left at this pace`;
+      card.appendChild(predict);
+    }
+
+    if (item.opened_date) {
+      const openedNote = document.createElement("div");
+      openedNote.className = "pantry-meta";
+      openedNote.textContent = `Opened ${item.opened_date}` + (item.days_since_opened != null ? ` (${item.days_since_opened}d ago)` : "");
+      card.appendChild(openedNote);
+    }
+
+    if (!item.is_finished) {
+      const usageForm = document.createElement("form");
+      usageForm.className = "pantry-usage-form";
+      const gramsInput = document.createElement("input");
+      gramsInput.type = "number";
+      gramsInput.step = "0.1";
+      gramsInput.min = "0.1";
+      gramsInput.placeholder = "grams used";
+      gramsInput.required = true;
+      const logBtn = document.createElement("button");
+      logBtn.type = "submit";
+      logBtn.textContent = "Log usage";
+      usageForm.append(gramsInput, logBtn);
+      usageForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const grams = parseFloat(gramsInput.value);
+        if (!grams || grams <= 0) return;
+        logBtn.disabled = true;
+        try {
+          const body = await callTrackingApi("POST", { id: item.id, grams_used: grams }, "/api/pantry/usage");
+          if (body.ok) location.reload();
+          else { alert(body.error); logBtn.disabled = false; }
+        } catch (err) {
+          alert(err.message);
+          logBtn.disabled = false;
+        }
+      });
+      card.appendChild(usageForm);
+    }
+
+    const photoForm = document.createElement("form");
+    photoForm.className = "pantry-photo-form";
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    const captionInput = document.createElement("input");
+    captionInput.type = "text";
+    captionInput.placeholder = "Caption (optional)";
+    const photoBtn = document.createElement("button");
+    photoBtn.type = "submit";
+    photoBtn.textContent = "📷 Add photo";
+    photoForm.append(fileInput, captionInput, photoBtn);
+    photoForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const file = fileInput.files[0];
+      if (!file) return;
+      photoBtn.disabled = true;
+      try {
+        const imageDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("Couldn't read that file."));
+          reader.readAsDataURL(file);
+        });
+        const body = await callTrackingApi("POST", {
+          pantry_item_id: item.id,
+          image_data_url: imageDataUrl,
+          caption: captionInput.value.trim() || null,
+        }, "/api/pantry/photos");
+        if (body.ok) location.reload();
+        else { alert(body.error); photoBtn.disabled = false; }
+      } catch (err) {
+        alert(err.message);
+        photoBtn.disabled = false;
+      }
+    });
+    card.appendChild(photoForm);
+
+    const manageRow = document.createElement("div");
+    manageRow.className = "manage-row";
+    if (!item.finished_date) {
+      const finishBtn = document.createElement("button");
+      finishBtn.type = "button";
+      finishBtn.className = "manage-link";
+      finishBtn.textContent = "Mark finished";
+      finishBtn.addEventListener("click", async () => {
+        finishBtn.disabled = true;
+        try {
+          const body = await callTrackingApi("PATCH", { id: item.id, finished_date: new Date().toISOString().slice(0, 10) }, "/api/pantry");
+          if (body.ok) location.reload();
+          else { alert(body.error); finishBtn.disabled = false; }
+        } catch (err) {
+          alert(err.message);
+          finishBtn.disabled = false;
+        }
+      });
+      manageRow.appendChild(finishBtn);
+    }
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "manage-link danger";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", async () => {
+      if (!confirm(`Remove "${item.product_name}" from your pantry? This also deletes its usage history.`)) return;
+      removeBtn.disabled = true;
+      try {
+        const body = await callTrackingApi("DELETE", { id: item.id }, "/api/pantry");
+        if (body.ok) location.reload();
+        else { alert(body.error); removeBtn.disabled = false; }
+      } catch (err) {
+        alert(err.message);
+        removeBtn.disabled = false;
+      }
+    });
+    manageRow.appendChild(removeBtn);
+    card.appendChild(manageRow);
+
+    return card;
+  }
+
+  async function loadPantry() {
+    const list = document.getElementById("pantry-list");
+    list.innerHTML = "";
+    let body;
+    try {
+      const res = await fetch("/api/pantry");
+      body = await res.json();
+    } catch {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Couldn't reach the pantry — this needs the site running via `python3 serve.py`, not a plain static file server.";
+      list.appendChild(empty);
+      return;
+    }
+    if (!body.ok) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = body.error;
+      list.appendChild(empty);
+      return;
+    }
+    if (!body.items.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Nothing in your pantry yet — add a tin above.";
+      list.appendChild(empty);
+      return;
+    }
+    // needs-attention items first (stale/reorder), then by remaining amount ascending
+    const priority = (i) => (i.is_finished ? 2 : (i.is_stale || i.needs_reorder) ? 0 : 1);
+    [...body.items]
+      .sort((a, b) => priority(a) - priority(b) || a.remaining_grams - b.remaining_grams)
+      .forEach(item => list.appendChild(buildPantryCard(item)));
+  }
+
+  const pantryAddForm = document.getElementById("pantry-add-form");
+  const pantryAddStatus = document.getElementById("pantry-add-status");
+  pantryAddForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const product_name = document.getElementById("pantry-product-name").value.trim();
+    const size_grams = document.getElementById("pantry-size-grams").value;
+    const store = document.getElementById("pantry-store").value.trim();
+    const region = document.getElementById("pantry-region").value.trim();
+    const grade = document.getElementById("pantry-grade").value.trim();
+    const cultivar = document.getElementById("pantry-cultivar").value.trim();
+    if (!product_name || !size_grams) return;
+
+    const submitBtn = pantryAddForm.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    pantryAddStatus.hidden = true;
+    try {
+      const body = await callTrackingApi("POST", {
+        product_name,
+        size_grams: Number(size_grams),
+        store: store || null,
+        region: region || null,
+        grade: grade || null,
+        cultivar: cultivar || null,
+      }, "/api/pantry");
+      pantryAddStatus.textContent = body.ok ? body.message : body.error;
+      pantryAddStatus.className = "pantry-status " + (body.ok ? "ok" : "error");
+      pantryAddStatus.hidden = false;
+      if (body.ok) {
+        pantryAddForm.reset();
+        loadPantry();
+      }
+    } catch (err) {
+      pantryAddStatus.textContent = err.message;
+      pantryAddStatus.className = "pantry-status error";
+      pantryAddStatus.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+  loadPantry();
+
+  // ---- photo log: a visual quality record across every pantry item (color is a real
+  // signal — vibrant green vs. dull/yellowish) ----
+  function buildPhotoCard(photo) {
+    const card = document.createElement("div");
+    card.className = "photo-card";
+
+    const img = document.createElement("img");
+    img.src = photo.url;
+    img.alt = photo.caption || photo.product_name;
+    img.loading = "lazy";
+    card.appendChild(img);
+
+    const meta = document.createElement("div");
+    meta.className = "photo-meta";
+    const itemName = document.createElement("div");
+    itemName.className = "photo-item-name";
+    itemName.textContent = photo.product_name;
+    meta.appendChild(itemName);
+    if (photo.caption) {
+      const caption = document.createElement("div");
+      caption.className = "photo-caption";
+      caption.textContent = photo.caption;
+      meta.appendChild(caption);
+    }
+    const takenAt = document.createElement("div");
+    takenAt.className = "photo-date";
+    takenAt.textContent = relativeTime(new Date(photo.taken_at));
+    meta.appendChild(takenAt);
+    card.appendChild(meta);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "manage-link danger photo-remove";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", async () => {
+      if (!confirm("Remove this photo?")) return;
+      removeBtn.disabled = true;
+      try {
+        const body = await callTrackingApi("DELETE", { id: photo.id }, "/api/pantry/photos");
+        if (body.ok) loadPhotoLog();
+        else { alert(body.error); removeBtn.disabled = false; }
+      } catch (err) {
+        alert(err.message);
+        removeBtn.disabled = false;
+      }
+    });
+    card.appendChild(removeBtn);
+
+    return card;
+  }
+
+  async function loadPhotoLog() {
+    const gallery = document.getElementById("photo-log");
+    gallery.innerHTML = "";
+    let body;
+    try {
+      const res = await fetch("/api/pantry/photos");
+      body = await res.json();
+    } catch {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Couldn't reach the photo log — this needs the site running via `python3 serve.py`, not a plain static file server.";
+      gallery.appendChild(empty);
+      return;
+    }
+    if (!body.ok) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = body.error;
+      gallery.appendChild(empty);
+      return;
+    }
+    if (!body.photos.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "No photos yet — add one from a pantry item above.";
+      gallery.appendChild(empty);
+      return;
+    }
+    body.photos.forEach(photo => gallery.appendChild(buildPhotoCard(photo)));
+  }
+  loadPhotoLog();
+
+  // ---- current prices ----
+  const priceGrid = document.getElementById("price-grid");
+  if (!PRICES.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No price data yet — run `python3 main.py` to scrape the tracked stores.";
+    priceGrid.appendChild(empty);
+  } else {
+    // most recent row per store+product
+    const latestByKey = new Map();
+    PRICES.forEach(row => {
+      const key = priceKey(row);
+      const existing = latestByKey.get(key);
+      if (!existing || row.scraped_at > existing.scraped_at) latestByKey.set(key, row);
+    });
+    const allPriceRows = [...latestByKey.values()];
+    const watchlist = loadWatchlist();
+
+    // "similar matcha" recommender: when a favorite is sold out, surface in-stock
+    // alternatives scored by how many of region/grade/cultivar match. Purely client-side —
+    // grade/cultivar/region are already in the exported price data, no extra API needed.
+    function findSimilarMatcha(row, limit = 3) {
+      const scored = allPriceRows
+        .filter(r => r.in_stock && priceKey(r) !== priceKey(row))
+        .map(r => {
+          let score = 0;
+          if (row.region && r.region === row.region) score++;
+          if (row.grade && r.grade === row.grade) score++;
+          if (row.cultivar && r.cultivar === row.cultivar) score++;
+          return { row: r, score };
+        })
+        .filter(s => s.score > 0)
+        .sort((a, b) => b.score - a.score || a.row.price - b.row.price);
+      return scored.slice(0, limit).map(s => s.row);
+    }
+
+    function buildPriceCard(row) {
+      const card = document.createElement("div");
+      card.className = "price-card";
+
+      const key = priceKey(row);
+      const watchBtn = document.createElement("button");
+      watchBtn.type = "button";
+      watchBtn.className = "watch-toggle" + (watchlist.has(key) ? " is-watched" : "");
+      watchBtn.textContent = watchlist.has(key) ? "★" : "☆";
+      watchBtn.setAttribute("aria-label", watchlist.has(key) ? "Remove from watchlist" : "Add to watchlist");
+      watchBtn.addEventListener("click", () => {
+        if (watchlist.has(key)) watchlist.delete(key); else watchlist.add(key);
+        saveWatchlist(watchlist);
+        if (watchlistOnlyCheckbox.checked) renderPriceGrid();
+        else {
+          watchBtn.classList.toggle("is-watched", watchlist.has(key));
+          watchBtn.textContent = watchlist.has(key) ? "★" : "☆";
+          watchBtn.setAttribute("aria-label", watchlist.has(key) ? "Remove from watchlist" : "Add to watchlist");
+        }
+      });
+      card.appendChild(watchBtn);
+
+      const store = document.createElement("div");
+      store.className = "store";
+      store.textContent = row.store + (row.region ? " · " + row.region : "");
+      card.appendChild(store);
+
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = row.product_name;
+      card.appendChild(name);
+
+      if (row.variant_label) {
+        const notes = document.createElement("div");
+        notes.className = "notes";
+        notes.textContent = row.variant_label;
+        card.appendChild(notes);
+      }
+
+      const priceRow = document.createElement("div");
+      priceRow.className = "price-row";
+      const price = document.createElement("span");
+      price.className = "price";
+      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency }).format(row.price);
+      const perG = document.createElement("span");
+      perG.className = "per-g";
+      if (row.size_grams) perG.textContent = (row.price / row.size_grams).toFixed(2) + " " + row.currency + "/g";
+      priceRow.append(price, perG);
+      card.appendChild(priceRow);
+
+      const badge = document.createElement("span");
+      badge.className = "badge " + (row.in_stock ? "good" : "critical");
+      badge.textContent = row.in_stock ? "In stock" : "Sold out";
+      card.appendChild(badge);
+
+      if (!row.in_stock) {
+        const alternatives = findSimilarMatcha(row);
+        if (alternatives.length) {
+          const similar = document.createElement("div");
+          similar.className = "similar-matcha";
+          const label = document.createElement("div");
+          label.className = "similar-matcha-label";
+          label.textContent = "Similar, in stock:";
+          similar.appendChild(label);
+          alternatives.forEach(alt => {
+            const altLink = document.createElement("a");
+            altLink.className = "similar-matcha-link";
+            altLink.href = alt.url;
+            altLink.target = "_blank";
+            altLink.rel = "noopener noreferrer";
+            altLink.textContent = `${alt.store} — ${alt.product_name}`;
+            similar.appendChild(altLink);
+          });
+          card.appendChild(similar);
+        }
+      }
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const checked = new Date(row.scraped_at);
+      meta.textContent = "Checked " + relativeTime(checked);
+      meta.title = checked.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+      card.appendChild(meta);
+
+      const link = document.createElement("div");
+      link.style.marginTop = "8px";
+      const a = document.createElement("a");
+      a.href = row.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = "View product →";
+      link.appendChild(a);
+      card.appendChild(link);
+
+      card.append(buildManageControls(row));
+
+      return card;
+    }
+
+    // edit (store/region/currency) and remove controls — posts to serve.py's /api/track;
+    // a plain static file server can't do this, same as the tracking form above
+    function buildManageControls(row) {
+      const wrap = document.createDocumentFragment();
+
+      const manageRow = document.createElement("div");
+      manageRow.className = "manage-row";
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "manage-link";
+      editBtn.textContent = "Edit";
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "manage-link danger";
+      removeBtn.textContent = "Remove";
+      manageRow.append(editBtn, removeBtn);
+      wrap.appendChild(manageRow);
+
+      const panel = document.createElement("div");
+      panel.className = "edit-panel";
+      panel.hidden = true;
+
+      const storeInput = document.createElement("input");
+      storeInput.type = "text";
+      storeInput.placeholder = "Store name";
+      storeInput.value = row.store;
+
+      const regionInput = document.createElement("input");
+      regionInput.type = "text";
+      regionInput.placeholder = "Region (blank to clear)";
+      regionInput.value = row.region || "";
+
+      const currencyInput = document.createElement("input");
+      currencyInput.type = "text";
+      currencyInput.placeholder = "Currency code";
+      currencyInput.value = row.currency;
+
+      const gradeInput = document.createElement("input");
+      gradeInput.type = "text";
+      gradeInput.placeholder = "Grade (blank to clear)";
+      gradeInput.value = row.grade || "";
+
+      const cultivarInput = document.createElement("input");
+      cultivarInput.type = "text";
+      cultivarInput.placeholder = "Cultivar (blank to clear)";
+      cultivarInput.value = row.cultivar || "";
+
+      const actions = document.createElement("div");
+      actions.className = "edit-panel-actions";
+      const saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "edit-save";
+      saveBtn.textContent = "Save";
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "edit-cancel";
+      cancelBtn.textContent = "Cancel";
+      actions.append(saveBtn, cancelBtn);
+
+      const status = document.createElement("p");
+      status.className = "edit-status";
+      status.hidden = true;
+
+      panel.append(storeInput, regionInput, currencyInput, gradeInput, cultivarInput, actions, status);
+      wrap.appendChild(panel);
+
+      editBtn.addEventListener("click", () => { panel.hidden = !panel.hidden; });
+      cancelBtn.addEventListener("click", () => { panel.hidden = true; });
+
+      saveBtn.addEventListener("click", async () => {
+        saveBtn.disabled = true;
+        status.hidden = true;
+        try {
+          const body = await callTrackingApi("PATCH", {
+            url: row.url,
+            store: storeInput.value.trim() || null,
+            region: regionInput.value.trim() || null,
+            currency: currencyInput.value.trim() || null,
+            grade: gradeInput.value.trim() || null,
+            cultivar: cultivarInput.value.trim() || null,
+          });
+          status.textContent = body.ok ? body.message + " Reloading…" : body.error;
+          status.className = "edit-status " + (body.ok ? "ok" : "error");
+          status.hidden = false;
+          if (body.ok) setTimeout(() => location.reload(), 1000);
+          else saveBtn.disabled = false;
+        } catch (err) {
+          status.textContent = err.message;
+          status.className = "edit-status error";
+          status.hidden = false;
+          saveBtn.disabled = false;
+        }
+      });
+
+      removeBtn.addEventListener("click", async () => {
+        if (!confirm(`Stop tracking "${row.product_name}"? This also deletes its saved price history.`)) return;
+        removeBtn.disabled = true;
+        try {
+          const body = await callTrackingApi("DELETE", { url: row.url });
+          if (body.ok) {
+            location.reload();
+          } else {
+            alert(body.error);
+            removeBtn.disabled = false;
+          }
+        } catch (err) {
+          alert(err.message);
+          removeBtn.disabled = false;
+        }
+      });
+
+      return wrap;
+    }
+
+    const sortSelect = document.getElementById("price-sort");
+    const regionSelect = document.getElementById("price-region");
+    const watchlistOnlyCheckbox = document.getElementById("price-watchlist-only");
+    // force filters to a known, non-hiding default on every load — browsers sometimes
+    // restore <select>/checkbox state across reload (and this page reloads itself after
+    // every track/edit/remove action), which would otherwise silently leave an engaged
+    // region or watchlist filter hiding a product you just added with no visible reason why
+    sortSelect.value = "price-asc";
+    regionSelect.value = "all";
+    watchlistOnlyCheckbox.checked = false;
+    [...new Set(allPriceRows.map(r => r.region || "Unspecified"))].sort().forEach(region => {
+      const opt = document.createElement("option");
+      opt.value = region;
+      opt.textContent = region;
+      regionSelect.appendChild(opt);
+    });
+    document.getElementById("price-filters").hidden = allPriceRows.length <= 1;
+
+    function renderPriceGrid() {
+      let rows = [...allPriceRows];
+      if (regionSelect.value !== "all") rows = rows.filter(r => (r.region || "Unspecified") === regionSelect.value);
+      if (watchlistOnlyCheckbox.checked) rows = rows.filter(r => watchlist.has(priceKey(r)));
+      if (sortSelect.value === "price-desc") rows.sort((a, b) => b.price - a.price);
+      else if (sortSelect.value === "store") rows.sort((a, b) => a.store.localeCompare(b.store));
+      else rows.sort((a, b) => a.price - b.price);
+
+      priceGrid.innerHTML = "";
+      if (!rows.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = watchlistOnlyCheckbox.checked ? "Nothing on your watchlist yet — star a product below." : "No products match this filter.";
+        priceGrid.appendChild(empty);
+        return;
+      }
+      rows.forEach(row => priceGrid.appendChild(buildPriceCard(row)));
+    }
+    sortSelect.addEventListener("change", renderPriceGrid);
+    regionSelect.addEventListener("change", renderPriceGrid);
+    watchlistOnlyCheckbox.addEventListener("change", renderPriceGrid);
+    renderPriceGrid();
+
+    // ---- what changed since last visit: watched price drops/restocks + upcoming harvest windows ----
+    const lastSeen = loadLastSeenPrices();
+    const priceChanges = [];
+    allPriceRows.filter(row => watchlist.has(priceKey(row))).forEach(row => {
+      const prev = lastSeen[priceKey(row)];
+      if (!prev) return;
+      if (row.price < prev.price) priceChanges.push(`${row.product_name} dropped to ${new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency }).format(row.price)}`);
+      else if (row.in_stock && !prev.in_stock) priceChanges.push(`${row.product_name} is back in stock`);
+    });
+    saveLastSeenPrices(allPriceRows);
+
+    const soonHarvests = upcomingHarvests(HARVEST, 7).map(({ row, days }) => `${row.region} harvest starts in ${days} day${days === 1 ? "" : "s"}`);
+
+    const alertLines = [...priceChanges, ...soonHarvests];
+    showAlertBanner(alertLines);
+    if (priceChanges.length) notify("Matcha Mania", priceChanges.join(" · "));
+  }
+
+  // ---- map ----
+  if (!HARVEST.length) {
+    document.getElementById("map").outerHTML = '<div class="empty-state">No harvest data yet — run `python3 -m data.pipelines.load_harvest_seasons`.</div>';
+  } else {
+    const map = L.map("map", { scrollWheelZoom: false }).setView([33, 128], 4);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 12,
+    }).addTo(map);
+
+    const regionCoords = {};
+    HARVEST.filter(r => r.lat != null && r.lng != null).forEach(row => {
+      regionCoords[row.region] = [row.lat, row.lng];
+      const marker = L.circleMarker([row.lat, row.lng], {
+        radius: 8,
+        color: cssVar(colorFor(row)),
+        fillColor: cssVar(colorFor(row)),
+        fillOpacity: 0.9,
+        weight: 3,
+        opacity: 1,
+      }).addTo(map);
+      marker.bindPopup(buildPopupHtml(row));
+    });
+
+    function buildPopupHtml(row) {
+      const div = document.createElement("div");
+      const strong = document.createElement("strong");
+      strong.textContent = row.region + " — " + row.flush;
+      div.appendChild(strong);
+      [row.window_description, row.quality_tier, row.notes].forEach(t => {
+        const p = document.createElement("div");
+        p.textContent = t;
+        div.appendChild(p);
+      });
+      return div;
+    }
+
+    const shopIcon = L.divIcon({
+      className: "",
+      html: '<div class="shop-pin"><span>🍵</span></div>',
+      iconSize: [26, 26],
+      iconAnchor: [13, 26],
+      popupAnchor: [0, -26],
+    });
+
+    // de-dup products by store+product so repeated scrapes don't stack pins
+    const latestProducts = new Map();
+    PRICES.forEach(row => {
+      const key = priceKey(row);
+      const existing = latestProducts.get(key);
+      if (!existing || row.scraped_at > existing.scraped_at) latestProducts.set(key, row);
+    });
+    [...latestProducts.values()].forEach(row => {
+      const coords = row.region && regionCoords[row.region];
+      if (!coords) return;
+      const marker = L.marker([coords[0] + 0.15, coords[1] + 0.15], { icon: shopIcon }).addTo(map);
+      const div = document.createElement("div");
+      const strong = document.createElement("strong");
+      strong.textContent = row.store + " — " + row.product_name;
+      div.appendChild(strong);
+      const price = document.createElement("div");
+      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency }).format(row.price) + (row.size_grams ? " / " + row.size_grams + "g" : "");
+      div.appendChild(price);
+      const stock = document.createElement("div");
+      stock.textContent = row.in_stock ? "In stock" : "Sold out";
+      div.appendChild(stock);
+      marker.bindPopup(div);
+    });
+  }
+
+  // ---- timeline ----
+  const grid = document.getElementById("tl-grid");
+  if (HARVEST.length) {
+    const monthsRow = document.createElement("div");
+    monthsRow.className = "tl-months";
+    const corner = document.createElement("div");
+    corner.textContent = "Region";
+    monthsRow.appendChild(corner);
+    MONTHS.forEach(m => { const d = document.createElement("div"); d.textContent = m; monthsRow.appendChild(d); });
+    grid.appendChild(monthsRow);
+
+    const sorted = [...HARVEST].sort((a, b) => {
+      if (a.country !== b.country) return a.country.localeCompare(b.country);
+      return a.start_month - b.start_month;
+    });
+
+    const currentMonth = now.getMonth() + 1;
+    function isInSeason(row) { return row.used_for_matcha && currentMonth >= row.start_month && currentMonth <= row.end_month; }
+
+    sorted.forEach(row => {
+      const r = document.createElement("div");
+      r.className = "tl-row";
+      r.dataset.group = row.used_for_matcha ? row.country : "muted";
+
+      const label = document.createElement("div");
+      label.className = "tl-label";
+      const strong = document.createElement("strong");
+      strong.textContent = row.region;
+      if (isInSeason(row)) {
+        const dot = document.createElement("span");
+        dot.className = "tl-in-season-dot";
+        dot.title = "In season now";
+        strong.appendChild(dot);
+      }
+      label.appendChild(strong);
+      const meta = document.createElement("div");
+      meta.className = "tl-label-meta";
+      meta.textContent = row.flush;
+      label.appendChild(meta);
+      r.appendChild(label);
+
+      const track = document.createElement("div");
+      track.className = "tl-track";
+      const bar = document.createElement("div");
+      bar.className = "tl-bar";
+      bar.tabIndex = 0;
+      bar.setAttribute("role", "img");
+      bar.setAttribute("aria-label", row.region + " " + row.flush + ", " + row.window_description);
+      const leftPct = ((row.start_month - 1) / 12) * 100;
+      const widthPct = ((row.end_month - row.start_month + 1) / 12) * 100;
+      bar.style.left = leftPct + "%";
+      bar.style.width = "0%";
+      bar.dataset.targetWidth = widthPct + "%";
+      bar.style.background = fillFor(row);
+      bindHoverTooltip(bar, () => tooltipBody(row.region + " — " + row.flush, [
+        { text: row.window_description },
+        { text: row.quality_tier, muted: true },
+        { text: row.notes },
+      ]));
+      track.appendChild(bar);
+
+      (row.buy_windows || []).forEach(w => {
+        const hit = document.createElement("div");
+        hit.className = "tl-buy-window-hit";
+        hit.tabIndex = 0;
+        hit.setAttribute("role", "img");
+        hit.setAttribute("aria-label", "Good time to buy: " + w.reason);
+        hit.style.left = (((w.start_month - 1) / 12) * 100) + "%";
+        hit.style.width = (((w.end_month - w.start_month + 1) / 12) * 100) + "%";
+        const strip = document.createElement("div");
+        strip.className = "tl-buy-window";
+        hit.appendChild(strip);
+        bindHoverTooltip(hit, () => tooltipBody("🛒 Good time to buy", [{ text: w.reason }]));
+        track.appendChild(hit);
+      });
+
+      r.appendChild(track);
+
+      grid.appendChild(r);
+    });
+
+    const todayLine = document.createElement("div");
+    todayLine.className = "tl-today-line";
+    const dayInMonth = new Date(now.getFullYear(), currentMonth, 0).getDate();
+    const monthFraction = (currentMonth - 1 + (now.getDate() - 1) / dayInMonth) / 12;
+    todayLine.style.left = `calc(190px + (100% - 190px) * ${monthFraction})`;
+    grid.appendChild(todayLine);
+  } else {
+    grid.innerHTML = '<div class="empty-state">No harvest data yet.</div>';
+  }
+
+  // grows the timeline bars from 0 to their real width — called once the calendar section scrolls into view
+  function growTimelineBars() {
+    document.querySelectorAll(".tl-bar").forEach(bar => { bar.style.width = bar.dataset.targetWidth; });
+  }
+
+  // ---- table ----
+  if (HARVEST.length) {
+    const table = document.getElementById("data-table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    ["Country", "Region", "Flush", "Window", "Quality tier", "Used for matcha", "Notes", "Source"].forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    [...HARVEST].sort((a, b) => a.country.localeCompare(b.country) || a.flush_rank - b.flush_rank).forEach(row => {
+      const tr = document.createElement("tr");
+      const cells = [row.country, row.region, row.flush, row.window_description, row.quality_tier, row.used_for_matcha ? "Yes" : "No", row.notes];
+      cells.forEach(c => {
+        const td = document.createElement("td");
+        td.textContent = c;
+        tr.appendChild(td);
+      });
+      const sourceTd = document.createElement("td");
+      const a = document.createElement("a");
+      a.href = row.source_url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = "link";
+      sourceTd.appendChild(a);
+      tr.appendChild(sourceTd);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+  }
+
+  // ---- scroll reveal ----
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      if (entry.target.id === "calendar") growTimelineBars();
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+
+  // ---- sources footer ----
+  if (HARVEST.length) {
+    const uniqueSources = [...new Set(HARVEST.map(r => r.source_url))];
+    const sourceList = document.getElementById("source-list");
+    uniqueSources.forEach(src => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = src;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = src;
+      li.appendChild(a);
+      sourceList.appendChild(li);
+    });
+  }
+
+  // ---- PWA: offline app-shell caching + installability ----
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+  }
+</script>
+</body>
+</html>
